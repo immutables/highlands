@@ -3,31 +3,31 @@ const libs = require('./libs')
 const ops = require('./ops')
 
 function dotProject(name, options) {
-	options = options || {}
-	let natures = [].concat(options.natures || [])
-	let projects = [].concat(options.projects || [])
+  options = options || {}
+  let natures = [].concat(options.natures || [])
+  let projects = [].concat(options.projects || [])
 
-	let projectRefs = ''
-	let projectNatures = ''
-	let buildSpecs = ''
+  let projectRefs = ''
+  let projectNatures = ''
+  let buildSpecs = ''
 
-	for (let p of projects) {
-		projectRefs += `
+  for (let p of projects) {
+    projectRefs += `
     <project>${p}</project>`
-	}
+  }
 
-	if (natures.includes('java')) {
-		buildSpecs += `
+  if (natures.includes('java')) {
+    buildSpecs += `
     <buildCommand>
       <name>org.eclipse.jdt.core.javabuilder</name>
       <arguments></arguments>
-		</buildCommand>`
+    </buildCommand>`
 
-		projectNatures += `
+    projectNatures += `
     <nature>org.eclipse.jdt.core.javanature</nature>`
-	}
+  }
 
-	return `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
   <name>${name}</name>
   <comment></comment>
@@ -42,34 +42,34 @@ function dotProject(name, options) {
 }
 
 function dotClasspath(m) {
-	let folders = []
+  let folders = []
 
-	for (let p of Object.keys(m.srcs).sort()) {
-		folders.push(`
-	<classpathentry kind="src" path="${p}"/>`)
-	}
+  for (let p of Object.keys(m.srcs).sort()) {
+    folders.push(`
+  <classpathentry kind="src" path="${p}"/>`)
+  }
 
-	let depmods = []
+  let depmods = []
 
-	for (let d of toValues(m.depmods)) {
-		depmods.push(`
+  for (let d of toValues(m.depmods)) {
+    depmods.push(`
   <!-- ${d.mod.path}  ${d.mod.name} -->
   <classpathentry kind="src" path="/${projectName(d.mod)}"${d.exported ? ' exported="true"':''} combineaccessrules="false"/>`)
-	}
+  }
 
-	let deplibs = []
+  let deplibs = []
 
-	for (let d of toValues(m.deplibs)) {
-		for (let j of d.lib.jars) {
-			deplibs.push(`
+  for (let d of toValues(m.deplibs)) {
+    for (let j of d.lib.jars) {
+      deplibs.push(`
   <!-- ${d.lib.name}  ${j} -->
   <classpathentry kind="lib" path="/${mods.rootname}/${d.lib.symlinkJar(j)}" sourcepath="/${mods.rootname}/${d.lib.symlinkSrc(j)}"${d.exported ? ' exported="true"':''}/>`)
-		}
-	}
+    }
+  }
 
-	let deps = [...depmods, ...deplibs]
+  let deps = [...depmods, ...deplibs]
 
-	return `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <classpath>${folders.join('')}
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>${deps.join('')}
   <classpathentry kind="output" path=".classes"/>
@@ -78,24 +78,24 @@ function dotClasspath(m) {
 }
 
 function projectName(m) {
-	return `${mods.rootname}.${m.name}`
+  return `${mods.rootname}.${m.name}`
 }
 
 function toValues(o) {
-	return Object.keys(o).map(k => o[k])
+  return Object.keys(o).map(k => o[k])
 }
 
 module.exports = {
-	genProject() {
-		ops.write(`.project`, dotProject(mods.rootname, {
-			projects: mods.all.map(projectName)
-		}))
-		for (let m of mods.all) {
-			ops.write(`${m.path}/.project`, dotProject(projectName(m), {
-				natures: 'java',
-				projects: toValues(m.depmods).map(m => projectName(m.mod))
-			}))
-			ops.write(`${m.path}/.classpath`, dotClasspath(m))
-		}
-	},
+  genProject() {
+    ops.write(`.project`, dotProject(mods.rootname, {
+      projects: mods.all.map(projectName)
+    }))
+    for (let m of mods.all) {
+      ops.write(`${m.path}/.project`, dotProject(projectName(m), {
+        natures: 'java',
+        projects: toValues(m.depmods).map(m => projectName(m.mod))
+      }))
+      ops.write(`${m.path}/.classpath`, dotClasspath(m))
+    }
+  },
 }
