@@ -19,9 +19,8 @@ module.exports = {
 
   // Creates symlink folder with generated code
   // targeting generated sources output somewhere under buck-out
+  // Requires mods.discover() to be executed prior
   linkGenSrc() {
-    if (!mods.all.length) throw `Requires mods.discover() to be executed prior`
-
     for (let m of mods.all) {
       for (let [p, folder] of Object.entries(m.srcs)) {
         if (folder.gen) {
