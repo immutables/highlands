@@ -1,4 +1,4 @@
-<div style="text-align: right"><em>
+<div align="right"><em>
 My heart's in the Highlands, my heart is not here,<br>
 My heart's in the Highlands a-chasing the deer -<br>
 A-chasing the wild deer, and following the roe;<br>
@@ -181,4 +181,4 @@ _Note: clearly, you can skip using this script and just use `buck project --ide 
 
 ## Example
 
-This repository also contains branch `example` which contains full sample Buck project ready to be managed by Highland scripts. It has Java, annotation processor and Kotlin rules used to add some variety.
+This repository also contains branch [example](https://github.com/immutables/highlands/tree/example) which contains full sample Buck project ready to be managed by Highland scripts. It has Java, annotation processor and Kotlin rules used to add some variety.
