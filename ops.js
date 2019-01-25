@@ -92,7 +92,7 @@ function read(path) {
 const fetchCache = {}
 
 function fetch(url) {
-  return fetchCache[url] || (fetchCache[url] = exec(`curl ${url}`))
+  return fetchCache[url] || (fetchCache[url] = exec(`curl --fail ${url}`))
 }
 
 module.exports = {

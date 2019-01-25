@@ -25,7 +25,7 @@ const opts = args({
     buck.fetchAll()
     syms.linkJars()
   }, 10],
-  '--ij': ['Generates project for Intellij IDEA', () => {
+  '--intellij': ['Generates project for Intellij IDEA', () => {
     libs.prepare()
     mods.discover()
     console.error(String(mods))

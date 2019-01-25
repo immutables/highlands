@@ -80,20 +80,19 @@ remote_file(
 `
 }
 
-function ruleJavaLibrary(target, jars) {
-  let deps = jars.map(j => `':${flatname(j)}'`)
+function ruleJavaLibrary(target, jars, deps) {
+  deps = jars.map(j => `':${flatname(j)}'`).concat(deps || [])
   return `
 java_library(
   name = '${target.goal}',
-  deps = [${deps.join(', ')}],
-  exported_deps = [${deps}],
+  exported_deps = [${deps.join(', ')}],
   visibility = ['PUBLIC'],
 )
 `
 }
 
-function ruleJavaAnnotationProcessor(target, jars, proc) {
-  let deps = jars.map(j => `':${flatname(j)}'`)
+function ruleJavaAnnotationProcessor(target, jars, deps, proc) {
+  deps = jars.map(j => `':${flatname(j)}'`).concat(deps || [])
   return `
 java_annotation_processor(
   name = '${target.goal}',
@@ -106,8 +105,8 @@ java_annotation_processor(
 
 function rules(target, jars, options) {
   let mainRule = options.processor
-      ? ruleJavaAnnotationProcessor(target, jars, options.processor)
-      : ruleJavaLibrary(target, jars)
+      ? ruleJavaAnnotationProcessor(target, jars, options.deps, options.processor)
+      : ruleJavaLibrary(target, jars, options.deps)
 
   return [mainRule, ...jars.map(rulePrebuiltJar)]
 }
