@@ -1,0 +1,5 @@
+java_binary(
+  name = 'sep2',
+  deps = ['//mod/sep2:sep2'],
+  labels = ['ide_mod'],
+)

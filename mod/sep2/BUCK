@@ -1,0 +1,16 @@
+java_library(
+  name = 'sep2',
+  srcs = glob(['src/**/*.java']),
+  resources_root = 'src',
+  deps = [
+    '//mod/sep1:sep1',
+    '//lib/google/common:common'
+  ],
+  visibility = ['PUBLIC'],
+)
+
+java_binary(
+  name = 'herr-1',
+  deps = [':sep2'],
+  main_class = 'sep2.Vj',
+)

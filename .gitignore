@@ -1,0 +1,29 @@
+# Highlands download location
+highlands/
+
+# Lockfile and libraries will always be generated
+.up.lock.json
+lib/
+
+# Highlands generated symlinks
+.jars/
+*-gen/
+*-gen1/
+*-gen2/
+
+# Jetbrains
+*.iml
+.idea/
+
+# Eclipse
+.settings/
+.factorypath
+.classpath
+.project
+
+# Buck
+.buckd
+buck-out/
+
+# Local customizations to config files (Buck)
+*.local

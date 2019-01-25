@@ -1,0 +1,5 @@
+java_binary(
+  name = 'example',
+  deps = ['//mod/sep1:sep1'],
+  labels = ['ide_mod'],
+)

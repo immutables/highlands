@@ -1,0 +1,30 @@
+java_library(
+  name = 'sep1',
+  srcs = glob(['src/**/*.java']),
+  resources = glob(['src/**'], excludes = ['src/**/*.java']),
+  resources_root = 'src',
+  deps = [
+  #  '//lib/google/common:common',
+  #  '//lib/immutables/value:annotations',
+  ],
+	provided_deps = ['//lib/immutables/value:annotations'],
+  exported_deps = [],
+	exported_provided_deps = ['//lib/google/common:common'],
+  tests = [':test'],
+  visibility = ['PUBLIC'],
+  # annotation_processors = ['org.immutables.processor.ProxyProcessor'],
+  # annotation_processor_deps = ['//lib/immutables/value:value',]
+  plugins = ['//lib/immutables/value:value'], # alternative way to run annotation processor
+)
+
+java_test(
+  name = 'test',
+  srcs = glob(['test/**/*.java']),
+  resources = glob(['test/**'],
+  excludes = ['test/**/*.java']),
+  resources_root = 'test',
+  deps = [
+    ':sep1',
+    '//lib/junit:junit',
+  ],
+)

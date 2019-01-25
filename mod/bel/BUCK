@@ -1,0 +1,26 @@
+
+kotlin_library(
+	name = 'bel',
+  srcs = glob(['src/**/*.kt']),
+	resources_root = 'src',
+	deps = [
+		'//lib/kotlin/stdlib:stdlib',
+	]
+)
+
+kotlin_test(
+	name = 'test',
+  srcs = glob(['test/**/*Test.kt']),
+	resources_root = 'test',
+	deps = [
+		'//lib/kotlin/stdlib:stdlib',
+		'//lib/junit:junit',
+	],
+	vm_args = ['-ea'],
+)
+
+java_binary(
+	name = 'bin',
+	deps = [':bel'],
+	main_class = 'exec.SampleKt',
+)
