@@ -16,8 +16,8 @@ interface Gendalf {
 }
 
 fun main(args: Array<String>) {
-	val s: Gendalf? = null
-	var g: Int = 1
+  val s: Gendalf? = null
+  var g: Int = 1
 
   thread(name = "Thread1") {
     val a = Arrays.toString(args)

@@ -3,21 +3,21 @@
 
 # BUCK will not look inside these for build configs
 [project]
-	ignore = \
-		.out, \
-		.gen, \
-		.git, \
-		.settings
+  ignore = \
+    .out, \
+    .gen, \
+    .git, \
+    .settings
 
 [java]
-	source_level = 8
-	target_level = 8
-#	src_roots = src, test
-#	skip_checking_missing_deps = true
+  source_level = 8
+  target_level = 8
+#  src_roots = src, test
+#  skip_checking_missing_deps = true
 
 [log]
-	max_traces = 1
-	compress_traces = true
+  max_traces = 1
+  compress_traces = true
 
 [buildfile]
-	#includes = //lib/DEFS
+  #includes = //lib/DEFS
