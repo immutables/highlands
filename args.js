@@ -12,7 +12,8 @@ function validate(options) {
     if (typeof handler !== 'function') {
       throw `Hanlder for '${option}' must be defined as function, but was: ${handler}`
     }
-    if (typeof order == 'undefined') {// ok
+    if (typeof order == 'undefined') {
+      // skip as ok
     } else if (typeof order != 'number' || order < 1) {
       throw `Order value must be a number > 0, but was: ${order}`
     }

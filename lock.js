@@ -13,18 +13,19 @@ function load() {
   let lockdata = JSON.parse(ops.read(LOCKFILE))
   let libs = lockdata.libs.map(l => [
     l.target,
-    l.jars.map(toCoordsSavingChecksum),
-    (l.srcs.map(toCoordsSavingChecksum), options),
+    l.jars.map(toCoordsSavingChecksum(mvn.EXT.jar_sum)),
+    (l.srcs.map(toCoordsSavingChecksum( mvn.EXT.src_sum)), l.options),
   ])
   return libs
 
-  function toCoordsSavingChecksum(j) {
-    let jar = mvn.coords(j.coords)
-    // this is not 'good' but it's the current design,
-    // we side-effectly fill checksum cache
-    sums.set(jar, mvn.EXT.jar_sum, j.jarsha1)
-    sums.set(jar, mvn.EXT.src_sum, j.srcsha1)
-    return jar
+  function toCoordsSavingChecksum(ext) {
+    return j => {
+      let jar = mvn.coords(j.coords)
+      // this is not 'good' but it's the current design,
+      // we side-effectly fill checksum cache
+      sums.set(jar, ext, j.sha1)
+      return jar
+    }
   }
 }
 
@@ -35,7 +36,7 @@ function store(libs) {
       target: String(l.target),
       options: l.options,
       jars: l.jars.map(outputJar),
-      srcs: l.srcs.map(outputJar),
+      srcs: l.srcs.map(outputSrc),
     }))
   }
   return ops.write(LOCKFILE, JSON.stringify(lockdata, null, 2))
@@ -43,8 +44,14 @@ function store(libs) {
   function outputJar(j) {
     return {
       coords: String(j),
-      jarsha1: j.checksumJar,
-      srcsha1: j.checksumSrc,
+      sha1: j.checksumJar
+    }
+  }
+
+  function outputSrc(j) {
+    return {
+      coords: String(j),
+      sha1: j.checksumSrc,
     }
   }
 }

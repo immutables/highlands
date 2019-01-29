@@ -7,7 +7,7 @@ function libraryXml(lib) {
   let classesRoots = lib.jars.map(j => `
       <root url="jar://$PROJECT_DIR$/${lib.symlinkJar(j)}!/" />`)
 
-  let sourcesRoots = lib.jars.map(j => `
+  let sourcesRoots = lib.srcs.map(j => `
       <root url="jar://$PROJECT_DIR$/${lib.symlinkSrc(j)}!/" />`)
 
   return `<?xml version="1.0" encoding="UTF-8"?>
