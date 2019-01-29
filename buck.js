@@ -55,9 +55,9 @@ function flatname(input) {
   return String(input).replace(/[-.:]/g, '_')
 }
 
-function rulePrebuiltJar(jar) {
+function rulePrebuiltJar(jar, src) {
   let n = flatname(jar)
-  return `
+  if (src) return `
 prebuilt_jar(
   name = '${n}',
   binary_jar = ':remote_${n}_jar',
@@ -73,9 +73,22 @@ remote_file(
 
 remote_file(
   name = 'remote_${n}_src',
-  out = '${jar.filenameSrc}',
-  url = '${jar.remote}${mvn.EXT.src}',
-  sha1 = '${jar.checksumSrc}',
+  out = '${src.filenameSrc}',
+  url = '${src.remote}${mvn.EXT.src}',
+  sha1 = '${src.checksumSrc}',
+)
+`
+  else return `
+prebuilt_jar(
+  name = '${n}',
+  binary_jar = ':remote_${n}_jar',
+)
+
+remote_file(
+  name = 'remote_${n}_jar',
+  out = '${jar.filenameJar}',
+  url = '${jar.remote}${mvn.EXT.jar}',
+  sha1 = '${jar.checksumJar}',
 )
 `
 }
@@ -103,12 +116,13 @@ java_annotation_processor(
 `
 }
 
-function rules(target, jars, options) {
+function rules(target, jars, srcs, options) {
   let mainRule = options.processor
       ? ruleJavaAnnotationProcessor(target, jars, options.deps, options.processor)
       : ruleJavaLibrary(target, jars, options.deps)
 
-  return [mainRule, ...jars.map(rulePrebuiltJar)]
+  let prebuiltJars = jars.map((j, i) => rulePrebuiltJar(j, srcs[i]))
+  return [mainRule, ...prebuiltJars]
 }
 
 function query(input, attrs) {

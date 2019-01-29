@@ -15,7 +15,8 @@ const c = {
 
 const use = {
   workdir: process.cwd(),
-  trace: false
+  trace: false,
+  timeout: 3, // seconds
 }
 
 function ls(path) {
@@ -92,7 +93,7 @@ function read(path) {
 const fetchCache = {}
 
 function fetch(url) {
-  return fetchCache[url] || (fetchCache[url] = exec(`curl --fail ${url}`))
+  return fetchCache[url] || (fetchCache[url] = exec(`curl --fail --connect-timeout ${use.timeout} ${url}`))
 }
 
 module.exports = {

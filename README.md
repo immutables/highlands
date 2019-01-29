@@ -100,6 +100,7 @@ The third, optional, argument is used to pass options:
 
 * `options.deps` additional dependencies for the lib rules can be passed in form of an array of Buck targets.
 * `options.processor` can specify Java annotation processor class. The processor option will turn a lib into an annotation processor "plugin". Plugins are added as `plugins` attribute array to a `java_library` rule.
+* `options.srcs` can be used to specify alternative artifacts used to attach as source jars. The option accepts an array of Maven coordinates or a single Maven coordintates string. The number of src elements should be exactly the same as for library jars (second argument to `.lib` call) and have corresponding order, so they can be matched by position. This, probably, is a very rare case to hit, but can be useful if you need to use specific repackaged artifact for which there are no sources, but there are sources for a regular artifact. Also, an empty array can be supplied to suppress using source jars (in this case rule to have the same number of src jars as library jars does not apply).
 
 ```js
 // Immutables annotation processor example
@@ -178,6 +179,8 @@ _Note: clearly, you can skip using this script and just use `buck project --ide 
 * This repo is released by tagging, you can use released zip from Github or clone the repo and use/copy from there. Make sure to calculate and verify checksum if in any automatic download script.
 
 * Add `--trace` CLI option every time you're investigating/troubleshooting script execution, this will give nice colored output providing tracing information about shell commands called and files/symlinks created.
+
+<img src="https://raw.githubusercontent.com/immutables/highlands/example/colored-trace.png">
 
 ## Example
 

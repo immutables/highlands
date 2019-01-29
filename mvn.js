@@ -44,12 +44,12 @@ class Coords {
     return sums.get(this, EXT.src_sum)
   }
 
-  fetchChecksumJar() {
-    return sums.fetch(this, EXT.jar_sum)
+  fetchChecksumJar(nofail) {
+    return sums.fetch(this, EXT.jar_sum, nofail)
   }
 
-  fetchChecksumSrc() {
-    return sums.fetch(this, EXT.src_sum)
+  fetchChecksumSrc(nofail) {
+    return sums.fetch(this, EXT.src_sum, nofail)
   }
 
   get path() {
@@ -70,11 +70,11 @@ class Coords {
       classifier: this.classifier,
       jar: {
         uri: `${this.remote}${EXT.jar}`,
-        sha1: this.fetchChecksumJar(),
+        sha1: this.fetchChecksumJar(/*nofail*/true) || '__UNAVAILABLE__',
       },
       sources: {
         uri: `${this.remote}${EXT.src}`,
-        sha1: this.fetchChecksumSrc(),
+        sha1: this.fetchChecksumSrc(/*nofail*/true) || '__UNAVAILABLE__',
       }
     }
   }

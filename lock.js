@@ -14,7 +14,7 @@ function load() {
   let libs = lockdata.libs.map(l => [
     l.target,
     l.jars.map(toCoordsSavingChecksum),
-    l.options,
+    (l.srcs.map(toCoordsSavingChecksum), options),
   ])
   return libs
 
@@ -34,14 +34,19 @@ function store(libs) {
     libs: libs.map(l => ({
       target: String(l.target),
       options: l.options,
-      jars: l.jars.map(j => ({
-        coords: String(j),
-        jarsha1: j.checksumJar,
-        srcsha1: j.checksumSrc,
-      })),
+      jars: l.jars.map(outputJar),
+      srcs: l.srcs.map(outputJar),
     }))
   }
   return ops.write(LOCKFILE, JSON.stringify(lockdata, null, 2))
+
+  function outputJar(j) {
+    return {
+      coords: String(j),
+      jarsha1: j.checksumJar,
+      srcsha1: j.checksumSrc,
+    }
+  }
 }
 
 module.exports = {

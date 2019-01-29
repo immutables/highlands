@@ -77,8 +77,12 @@ module.exports = function(options, hooks) {
     return result
   }
 
+  function orderOf(task) {
+    return task[0][3] || Number.MAX_VALUE
+  }
+
   function taskOrdering(a, b) {
-    return (a[0][3] || Number.MAX_VALUE) - (b[0][3] || Number.MAX_VALUE)
+    return orderOf(a) - orderOf(b)
   }
 
   function parse(args) {
