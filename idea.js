@@ -42,6 +42,11 @@ function moduleMainXml(excludes) {
 }
 
 function moduleXml(mod) {
+  let excludesFolders = ['.jars']
+      .filter(dir => ops.exists(paths.join(mod.path, dir)))
+      .map(dir => `
+      <excludeFolder url="file://$MODULE_DIR$/../../${mod.path}/${dir}" isTestSource="false" />`)
+
   let folders = Object.entries(mod.srcs).map(([p, f]) => `
       <sourceFolder url="file://$MODULE_DIR$/../../${mod.path}/${p}"
           isTestSource="${f.test}" generated="${f.gen}"/>`)
@@ -60,7 +65,7 @@ function moduleXml(mod) {
 <module type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$/../../${mod.path}">${folders.join('')}
+    <content url="file://$MODULE_DIR$/../../${mod.path}">${folders.join('')}${excludesFolders.join('')}
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />${deps.join('')}
