@@ -60,10 +60,16 @@ function dotClasspath(m) {
   let deplibs = []
 
   for (let d of toValues(m.deplibs)) {
-    for (let j of d.lib.jars) {
+    for (let i in d.lib.jars) {
+      let j = d.lib.jars[i]
+      let s = d.lib.srcs[i]
+      let jarpath = ` path="/${mods.rootname}/${d.lib.symlinkJar(j)}"`
+      let sourcepath = s ? ` sourcepath="/${mods.rootname}/${d.lib.symlinkSrc(s)}"` : ''
+      let exported = d.exported ? ' exported="true"':''
+
       deplibs.push(`
   <!-- ${d.lib.name}  ${j} -->
-  <classpathentry kind="lib" path="/${mods.rootname}/${d.lib.symlinkJar(j)}" sourcepath="/${mods.rootname}/${d.lib.symlinkSrc(j)}"${d.exported ? ' exported="true"':''}/>`)
+  <classpathentry kind="lib"${jarpath}${sourcepath}${exported}/>`)
     }
   }
 
