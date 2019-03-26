@@ -62,6 +62,7 @@ prebuilt_jar(
   name = '${n}',
   binary_jar = ':remote_${n}_jar',
   source_jar = ':remote_${n}_src',
+  maven_coords = '${jar}',
 )
 
 remote_file(
@@ -82,6 +83,7 @@ remote_file(
 prebuilt_jar(
   name = '${n}',
   binary_jar = ':remote_${n}_jar',
+  maven_coords = '${jar}',
 )
 
 remote_file(
