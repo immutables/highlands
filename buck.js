@@ -95,24 +95,44 @@ remote_file(
 `
 }
 
-function ruleJavaLibrary(target, jars, deps) {
-  deps = jars.map(j => `':${flatname(j)}'`).concat(deps || [])
+function ruleJavaLibrary(t, jars, options) {
+  let deps = jars.map(j => `':${flatname(j)}'`)
+      .concat((options.deps || []).map(target).map(d => `'${d}'`))
   return `
 java_library(
-  name = '${target.goal}',
+  name = '${t.goal}',
   exported_deps = [${deps.join(', ')}],
   visibility = ['PUBLIC'],
 )
 `
 }
 
-function ruleJavaAnnotationProcessor(target, jars, deps, proc) {
-  deps = jars.map(j => `':${flatname(j)}'`).concat(deps || [])
+function ruleJavaAnnotationProcessor(t, jars, options) {
+  let deps = jars.map(j => `':${flatname(j)}'`)
+      .concat((options.deps || []).map(target).map(d => `'${d}'`))
+
+  let processorLibrary = ''
+  if (options.processorLibrary) {
+    return `
+java_library(
+  name = '${options.processorLibrary}',
+  exported_deps = [${deps.join(', ')}],
+  visibility = ['PUBLIC'],
+)
+
+java_annotation_processor(
+  name = '${t.goal}',
+  deps = [':${options.processorLibrary}'],
+  processor_class = '${options.processor}',
+  visibility = ['PUBLIC'],
+)
+`
+  }
   return `
 java_annotation_processor(
-  name = '${target.goal}',
+  name = '${t.goal}',
   deps = [${deps.join(', ')}],
-  processor_class = '${proc}',
+  processor_class = '${options.processor}',
   visibility = ['PUBLIC'],
 )
 `
@@ -120,8 +140,8 @@ java_annotation_processor(
 
 function rules(target, jars, srcs, options) {
   let mainRule = options.processor
-      ? ruleJavaAnnotationProcessor(target, jars, options.deps, options.processor)
-      : ruleJavaLibrary(target, jars, options.deps)
+      ? ruleJavaAnnotationProcessor(target, jars, options)
+      : ruleJavaLibrary(target, jars, options)
 
   let prebuiltJars = jars.map((j, i) => rulePrebuiltJar(j, srcs[i]))
   return [mainRule, ...prebuiltJars]

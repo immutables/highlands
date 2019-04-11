@@ -44,6 +44,7 @@ const mods = {
 
     collectModulePaths()
     defineSourcesAndDeps()
+    defineGeneratedSources()
     assignModuleNames()
     wireDependencies()
 
@@ -83,16 +84,49 @@ const mods = {
       if (resFolder) {
         let existing = srcs[resFolder]
         srcs[resFolder] = {
-          test: isTest && (existing ? existing.test : true),
+          test: isTest || (existing ? existing.test : false),
           path: resFolder,
           gen: false,
         }
       }
+    }
 
+    function defineGeneratedSources() {
+      // generated folders added in separate loop to precisely
+      // determine if generated source folder is considered
+      // "isTestGen" (if one of the contributing rules
+      // to the base non-gen source folder is test rule)
+      for (let rule of allTargets) {
+        let t = buck.target(rule[buck.attr.qname])
+        let m = moduleByPath[t.path]
+        if (!m) continue
+
+        let isTest = isTestRule(rule)
+        addGeneratedSourceFolders(m.srcs, rule, isTest)
+      }
+    }
+
+    function addGeneratedSourceFolders(srcs, rule, isTest) {
+      let resFolder = rule[buck.attr.resourcesRoot]
+      let isTestGen = isTest
+      if (resFolder) {
+        let existing = srcs[resFolder]
+        isTestGen = isTest || (existing && existing.test)
+      }
       let genPath = rule[buck.attr.generatedSourcePath]
+      if (!genPath && isTest && usesCodegen(rule)) {
+        // this is hardcoded edge-case due to some inconsitency in how Buck
+        // not returning generatedSourcePath for test rules
+        // https://github.com/facebook/buck/issues/2235
+        genPath = `buck-out/annotation/${rule[buck.attr.path]}/__${rule[buck.attr.name]}#testsjar_gen__`
+      }
       if (genPath && usesCodegen(rule)) {
-        let alias = resFolder || (isTest ? 'test' : 'src')
-        putInc(srcs, `${alias}-gen`, {gen: true, path: genPath, test: isTest})
+        let alias = resFolder || (isTestGen ? 'test' : 'src')
+        putInc(srcs, `${alias}-gen`, {
+          gen: true,
+          path: genPath,
+          test: isTestGen
+        })
       }
     }
 
@@ -193,7 +227,7 @@ const mods = {
     }
 
     // could only think of convention rule named `*_test`
-    // obviously would work fine for  java_test and kotlin_test etc
+    // obviously would work fine for java_test and kotlin_test etc
     // any other ways to distinguish test rules?
     function isTestRule(rule) {
       return /.+_test$/.test(rule[buck.attr.type] || '')
@@ -211,7 +245,7 @@ const mods = {
     }
 
     function putInc(object, field, value) {
-      for(let s = '';; s = String((Number(s) || 0) + 1)) {
+      for (let s = '';; s = String((Number(s) || 0) + 1)) {
         let alias = field + s
         if (!(alias in object)) {
           object[alias] = value
