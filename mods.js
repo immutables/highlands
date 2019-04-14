@@ -1,3 +1,4 @@
+'use strict'
 const paths = require('path')
 const buck = require('./buck')
 const libs = require('./libs')
@@ -38,7 +39,7 @@ const mods = {
     if (this.all.length) return // already discovered
     // to force rediscovery clear this.all array
 
-    let allTargets = buck.info(`//...`)
+    let allTargets = buck.info('//...')
     let moduleByPath = {} // mapping from path/folder to a originating rule
     let moduleByTarget = {} // reverse mapping of which module target falls in
 
@@ -52,7 +53,7 @@ const mods = {
       this.add(moduleByPath[p])
     }
 
-    return // we're done here, hoisted private funcs below
+     // we're done here, hoisted private functions below
 
     function collectModulePaths() {
       for (let rule of allTargets) {
@@ -115,7 +116,7 @@ const mods = {
       }
       let genPath = rule[buck.attr.generatedSourcePath]
       if (!genPath && isTest && usesCodegen(rule)) {
-        // this is hardcoded edge-case due to some inconsitency in how Buck
+        // this is hardcoded edge-case due to some inconsistency in how Buck
         // not returning generatedSourcePath for test rules
         // https://github.com/facebook/buck/issues/2235
         genPath = `buck-out/annotation/${rule[buck.attr.path]}/__${rule[buck.attr.name]}#testsjar_gen__`
@@ -162,7 +163,7 @@ const mods = {
       }
 
       function merge(a, b) {
-        if (String(a.target) != String(b.target)) throw `cannot merge dependencies`
+        if (String(a.target) !== String(b.target)) throw 'cannot merge dependencies'
         return {
           target: a.target,
           test: a.test && b.test, // if any rule in module use it not for test
@@ -192,7 +193,7 @@ const mods = {
       uniqueNames[mods.rootname] = {} // claimed ahead
 
       for (let [n, ms] of Object.entries(bySimpleNames)) {
-        if (n == mods.rootname || ms.length > 1) {
+        if (n === mods.rootname || ms.length > 1) {
           ms.forEach(m => assignUniqueName(m, pathDerivedName(m)))
         } else {
           ms.forEach(m => assignUniqueName(m, n))
@@ -255,7 +256,7 @@ const mods = {
     }
 
     function notEmpty(arr) {
-      return arr && arr.length > 0
+      return !!arr && arr.length > 0
     }
   }
 }

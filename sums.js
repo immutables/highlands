@@ -1,3 +1,4 @@
+'use strict'
 const ops = require('./ops')
 
 module.exports = {

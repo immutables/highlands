@@ -1,16 +1,17 @@
+'use strict'
 const fs = require('fs')
 const paths = require('path')
 const childProcess = require('child_process')
 
 const c = {
-  dim: `\x1b[2m`,
-  res: `\x1b[0m`,
-  red: `\x1b[31m`,
-  grn: `\x1b[32m`,
-  yel: `\x1b[33m`,
-  blu: `\x1b[34m`,
-  mag: `\x1b[35m`,
-  cyn: `\x1b[36m`,
+  dim: '\x1b[2m',
+  res: '\x1b[0m',
+  red: '\x1b[31m',
+  grn: '\x1b[32m',
+  yel: '\x1b[33m',
+  blu: '\x1b[34m',
+  mag: '\x1b[35m',
+  cyn: '\x1b[36m',
 }
 
 const use = {

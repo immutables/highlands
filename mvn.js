@@ -1,3 +1,4 @@
+'use strict'
 const sums = require('./sums')
 
 const REPO = 'https://repo1.maven.org/maven2/'
@@ -83,15 +84,15 @@ class Coords {
 function coords(input) {
   if (input instanceof Coords) return input
   let data = String(input).split(':')
-  if (data.length == 3) {
+  if (data.length === 3) {
     let [g, a, v] = data
     return new Coords([g, a, v, undefined])
   }
-  if (data.length == 4) {
+  if (data.length === 4) {
     let [g, a, c, v] = data
     return new Coords([g, a, v, c])
   }
-  throw `Cannot parse maven coords ${string}`
+  throw `Cannot parse maven coords ${input}`
 }
 
 module.exports = {

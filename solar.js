@@ -1,5 +1,5 @@
+'use strict'
 const mods = require('./mods')
-const libs = require('./libs')
 const ops = require('./ops')
 
 function dotProject(name, options) {
@@ -93,7 +93,7 @@ function toValues(o) {
 
 module.exports = {
   genProject() {
-    ops.write(`.project`, dotProject(mods.rootname, {
+    ops.write('.project', dotProject(mods.rootname, {
       projects: mods.all.map(projectName)
     }))
     for (let m of mods.all) {

@@ -1,8 +1,9 @@
+'use strict'
 
 function validate(options) {
   let validated = {}
   for (let [option, definition] of Object.entries(options)) {
-    if (!(definition instanceof Array) || definition.length < 2) {
+    if (!(Array.isArray(definition)) || definition.length < 2) {
       throw `Option should be defined as '--opt': ['help string', (arg,..) => handle(), 2/*optional order*/], wrong value: ${definition}`
     }
     let [info, handler, order] = definition
@@ -10,11 +11,11 @@ function validate(options) {
       throw `Info string for '${option}' must be defined as function, but was: ${handler}`
     }
     if (typeof handler !== 'function') {
-      throw `Hanlder for '${option}' must be defined as function, but was: ${handler}`
+      throw `Handler for '${option}' must be defined as function, but was: ${handler}`
     }
-    if (typeof order == 'undefined') {
+    if (typeof order === 'undefined') {
       // skip as ok
-    } else if (typeof order != 'number' || order < 1) {
+    } else if (typeof order !== 'number' || order < 1) {
       throw `Order value must be a number > 0, but was: ${order}`
     }
     // putting the option token in front
@@ -53,11 +54,11 @@ module.exports = function(options, hooks) {
     let tasks = parse(args)
     try {
       let results = tasks.map(execute)
-      if (typeof hooks.end == 'function') {
+      if (typeof hooks.end === 'function') {
         hooks.end(tasks, results)
       }
     } catch (e) {
-      if (typeof hooks.err == 'function') {
+      if (typeof hooks.err === 'function') {
         hooks.err(e)
       } else {
         console.trace(e)
@@ -66,13 +67,13 @@ module.exports = function(options, hooks) {
   }
 
   function execute([[option, info, handler, _], values]) {
-    if (typeof hooks.before == 'function') {
+    if (typeof hooks.before === 'function') {
       hooks.before(option, info, values)
     }
 
     let result = handler.apply(context, values)
 
-    if (typeof hooks.after == 'function') {
+    if (typeof hooks.after === 'function') {
       hooks.after(option, info, result)
     }
     return result
@@ -99,7 +100,7 @@ module.exports = function(options, hooks) {
       let handler = definition[2]
       let values = []
       for (let i = 0; i < handler.length; i++) {
-        let tooFewValues = () => die(`Not enouph values for option '${option}' which requires ${handler.length} argument${handler.length > 1 ? 's' : ''}`)
+        let tooFewValues = () => die(`Not enough values for option '${option}' which requires ${handler.length} argument${handler.length > 1 ? 's' : ''}`)
         if (!args.length) tooFewValues()
         let v = args.shift()
         if (v in options) tooFewValues()

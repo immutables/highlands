@@ -1,3 +1,4 @@
+'use strict'
 const mvn = require('./mvn')
 const buck = require('./buck')
 const libs = require('./libs')
@@ -45,7 +46,7 @@ const opts = args({
   }],
 }, {
   before: (_, hint) => ops.info(`${hint}`),
-  end: () => ops.ok(`OK`),
+  end: () => ops.ok('OK'),
   err: (e) => {
     ops.err(`ERR ${e}`)
     if (ops.use.trace) {
