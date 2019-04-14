@@ -1,3 +1,4 @@
+'use strict'
 const paths = require('path')
 const buck = require('./buck')
 const mods = require('./mods')

@@ -1,3 +1,4 @@
+'use strict'
 const paths = require('path')
 const ops = require('./ops')
 const libs = require('./libs')
@@ -126,8 +127,8 @@ module.exports = {
       ops.write(`.idea/modules/${m.name}.iml`, moduleXml(m))
     }
     ops.write(`.idea/modules/${mods.rootname}.iml`, moduleMainXml(this.excluded()))
-    ops.write(`.idea/modules.xml`, modulesAllXml(mods))
-    ops.write(`.idea/misc.xml`, miscXml())
+    ops.write('.idea/modules.xml', modulesAllXml(mods))
+    ops.write('.idea/misc.xml', miscXml())
   },
 
   // all folders at project root which do not contain modules
