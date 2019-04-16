@@ -1,3 +1,4 @@
+'use strict'
 const paths = require('path')
 const ops = require('./ops')
 const mvn = require('./mvn')
@@ -153,7 +154,7 @@ function query(input, attrs) {
 let cachedInfo = {}
 
 function dropCache() {
-  cachedTargets = {}
+  cachedInfo = {}
 }
 
 function info(pattern) {
