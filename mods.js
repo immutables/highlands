@@ -218,6 +218,14 @@ const mods = {
           } else if (t in libs.byTarget) {
             let lib = libs.byTarget[t]
             m.deplibs[lib.target] = Object.assign({}, dep, {lib})
+            // this part processes first-order deps of the library in a fairly
+            // Ad Hoc manner and overall questionable
+            for (let depkey of (lib.options.deps || []).map(buck.target).map(String)) {
+              let deplib = libs.byTarget[depkey]
+              if (deplib) {
+                m.deplibs[depkey] = Object.assign({}, dep, {lib:deplib})
+              }
+            }
           } else if (buck.target(t).isLocal) {
             // local dependency should be implicit in IDE
           } else {

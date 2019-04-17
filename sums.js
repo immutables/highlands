@@ -21,11 +21,15 @@ module.exports = {
   fetch(jar, ext, nofail) {
     let uri = this.uri(jar, ext)
     if (nofail) try {
-      return ops.fetch(uri).trim()
+      return extract(ops.fetch(uri))
     } catch (e) {
       ops.err(String(e))
       return undefined
     }
-    return ops.fetch(uri).trim()
+    return extract(ops.fetch(uri))
+
+    function extract(input) {
+      return input.split(' ')[0].trim()
+    }
   }
 }
