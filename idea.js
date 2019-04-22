@@ -52,11 +52,11 @@ function moduleXml(mod) {
       <sourceFolder url="file://$MODULE_DIR$/../../${mod.path}/${p}"
           isTestSource="${f.test}" generated="${f.gen}"/>`)
 
-  let depmods = toValues(mod.depmods).map(d => `
+  let depmods = Object.values(mod.depmods).map(d => `
     <orderEntry type="module" module-name="${d.mod.name}"
         scope="${scope(d)}" ${d.exported ? ' exported=""':''} />`)
 
-  let deplibs = toValues(mod.deplibs).map(d => `
+  let deplibs = Object.values(mod.deplibs).map(d => `
     <orderEntry type="library" name="${d.lib.name}"
         scope="${scope(d)}" level="project"${d.exported ? ' exported=""':''}/>`)
 
@@ -73,9 +73,6 @@ function moduleXml(mod) {
   </component>
 </module>
 `
-  function toValues(o) {
-    return Object.keys(o).map(k => o[k])
-  }
 
   function scope(dep) {
     if (dep.test) return 'TEST'

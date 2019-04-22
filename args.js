@@ -3,7 +3,7 @@
 function validate(options) {
   let validated = {}
   for (let [option, definition] of Object.entries(options)) {
-    if (!(Array.isArray(definition)) || definition.length < 2) {
+    if (!Array.isArray(definition) || definition.length < 2) {
       throw `Option should be defined as '--opt': ['help string', (arg,..) => handle(), 2/*optional order*/], wrong value: ${definition}`
     }
     let [info, handler, order] = definition
