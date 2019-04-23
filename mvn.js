@@ -1,7 +1,11 @@
 'use strict'
 const sums = require('./sums')
 
-const REPO = 'https://repo1.maven.org/maven2/'
+const REPO = {
+  central: 'https://repo1.maven.org/maven2/',
+  jcenter: 'https://jcenter.bintray.com/',
+}
+
 const EXT = {
   jar: '.jar',
   src: '-sources.jar',
@@ -10,8 +14,9 @@ const EXT = {
 }
 
 class Coords {
-  constructor(gavc) {
+  constructor(gavc, repo) {
     this.gavc = gavc
+    this.repo = repo
   }
 
   get group() { return this.gavc[0] }
@@ -59,7 +64,7 @@ class Coords {
   }
 
   get remote() {
-    return REPO + this.path + this.filename
+    return this.repo + this.path + this.filename
   }
 
   get info() {
@@ -81,18 +86,27 @@ class Coords {
   }
 }
 
-function coords(input) {
+function coords(input, options) {
   if (input instanceof Coords) return input
   let data = String(input).split(':')
   if (data.length === 3) {
     let [g, a, v] = data
-    return new Coords([g, a, v, undefined])
+    return new Coords([g, a, v, undefined], repo(options))
   }
   if (data.length === 4) {
     let [g, a, c, v] = data
-    return new Coords([g, a, v, c])
+    return new Coords([g, a, v, c], repo(options))
   }
   throw `Cannot parse maven coords ${input}`
+}
+
+function repo(options) {
+  // trying to use either 'central' or 'jcenter' as logical repo names
+  // to lookup repo uri prefix, but if it's neither then if none specified
+  // we use 'central' as default, otherwise if specified -
+  // we use this as URI prefix directly
+  let repo = options && options.repo || 'central'
+  return REPO[repo] || repo
 }
 
 module.exports = {

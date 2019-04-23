@@ -95,12 +95,13 @@ require('./highlands/')
 ```
 
 Library definition contains library's canonical Buck path. By convention, if `:target` part is omitted it is considered the same as last segment of a path, so `//lib/one` is equivalent to `//lib/one:one` and is so called default target. Non-default targets are also supported and can be used for classifier jars or logically "sibling" jars/flavors. The example uses `//lib/` shared suffix for such libraries and it is not mandatory — use the path you want, but it's usually a good idea to have such common prefix (`//lib`, `//extern`, `//third-party/` etc are commonly used).
-Then, as second argument, Maven coordinates string in the form of `<groupId>:<artifactId>:<version>` or `<groupId>:<artifactId>:<classifier>:<version>` is used to specify artifact in Maven Central. More than one artifact can be used if wrapped in an array. All such artifacts will comprise a single Buck library with a given path. No transitive dependencies are resolved, so, please, collect all needed dependencies in an array.
+Then, as second argument, Maven coordinates string in the form of `<groupId>:<artifactId>:<version>` or `<groupId>:<artifactId>:<classifier>:<version>` is used to specify artifact in Maven Central. More than one artifact can be used if wrapped in an array. All such artifacts will comprise a single Buck library with a given path. No transitive dependencies are resolved, so, please, collect all needed dependencies in an array and/or add additional libraries as dependencies via `options.deps` see below.
 The third, optional, argument is used to pass options:
 
-* `options.deps` additional dependencies for the lib rules can be passed in form of an array of Buck targets.
-* `options.processor` can specify Java annotation processor class. The processor option will turn a lib into an annotation processor "plugin". Plugins are added as `plugins` attribute array to a `java_library` rule.
-* `options.srcs` can be used to specify alternative artifacts used to attach as source jars. The option accepts an array of Maven coordinates or a single Maven coordintates string. The number of src elements should be exactly the same as for library jars (second argument to `.lib` call) and have corresponding order, so they can be matched by position. This, probably, is a very rare case to hit, but can be useful if you need to use specific repackaged artifact for which there are no sources, but there are sources for a regular artifact. Also, an empty array can be supplied to suppress using source jars (in this case rule to have the same number of src jars as library jars does not apply).
+* `options.deps` additional dependencies for the lib rules can be passed in form of an array of Buck targets. These are added as exported dependencies to the library rule
+* `options.processor` can specify Java annotation processor class. The processor option will turn a lib into an annotation processor "plugin". Plugins are added as `plugins` attribute array to a `java_library` rule. Additional `options.processorLibrary` used to add local rule name to define intermediate annotation processor library which can be used by external rules as a library as opposed to a plugin, the plugin will also be defined in this case but it will also add this processor library as dependency.
+
+* `options.srcs` can be used to specify alternative artifacts used to attach as source jars. The option accepts an array of Maven coordinates or a single Maven coordinates string. The number of src elements should be exactly the same as for library jars (second argument to `.lib` call) and have corresponding order, so they can be matched by position. This, probably, is a very rare case to hit, but can be useful if you need to use specific repackaged artifact for which there are no sources, but there are sources for a regular artifact. Also, an empty array can be supplied to suppress using source jars (in this case rule to have the same number of src jars as library jars does not apply).
 
 ```js
 // Immutables annotation processor example
@@ -108,6 +109,7 @@ The third, optional, argument is used to pass options:
 	processor: 'org.immutables.processor.ProxyProcessor'
 })
 ```
+* `options.repo` allows to specify remote repository for an artifact. Accepts uri prefix (no auto-slashes auto-added, leave trailing one) or a special values such as `'central'` for Maven Central and `jcenter` for Bintray's JCenter. When not specified, the default is to use Maven Central. The repo will be used for all artifacts in this library.
 
 ## "Lock" file and libraries
 
@@ -141,7 +143,7 @@ java_library(
   name = 'module1', # <- Default target in this directory
   srcs = glob(['src/**/*.java']),
   resources = glob(['src/**'], excludes = ['src/**/*.java']),
-  resources_root = 'src',  # <- Bingo! we have a module
+  resources_root = 'src', # <- Bingo! we have a module
   deps = [
   	'//lib/google/common:common',
   ],

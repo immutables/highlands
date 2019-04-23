@@ -13,14 +13,14 @@ function load() {
   let lockdata = JSON.parse(ops.read(LOCKFILE))
   let libs = lockdata.libs.map(l => [
     l.target,
-    l.jars.map(toCoordsSavingChecksum(mvn.EXT.jar_sum)),
-    (l.srcs.map(toCoordsSavingChecksum( mvn.EXT.src_sum)), l.options),
+    l.jars.map(toCoordsSavingChecksum(mvn.EXT.jar_sum, l.options)),
+    (l.srcs.map(toCoordsSavingChecksum(mvn.EXT.src_sum, l.options)), l.options),
   ])
   return libs
 
-  function toCoordsSavingChecksum(ext) {
+  function toCoordsSavingChecksum(ext, options) {
     return j => {
-      let jar = mvn.coords(j.coords)
+      let jar = mvn.coords(j.coords, options)
       // this is not 'good' but it's the current design,
       // we side-effectly fill checksum cache
       sums.set(jar, ext, j.sha1)

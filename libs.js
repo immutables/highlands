@@ -48,8 +48,9 @@ class Lib {
 
 Lib.fromRaw = function(target, jars, options) {
   options = options || {}
-  jars = [].concat(jars).map(mvn.coords)
-  let srcs = options.srcs && [].concat(options.srcs).map(mvn.coords)
+  let toCoords = j => mvn.coords(j, options)
+  jars = [].concat(jars).map(toCoords)
+  let srcs = options.srcs && [].concat(options.srcs).map(toCoords)
 
   if (srcs
       && srcs.length > 0
