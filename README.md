@@ -83,10 +83,10 @@ The entry point for script execution is "up" file. The actual name can be differ
 // require by relative name to downloaded dir with scripts,
 // ending slash in the path is a must for index.js to be picked
 require('./highlands/')
-	.lib('//lib/some/library', 'group:artifact:version')
-	.lib('//lib/other/library:classifier', 'group:artifact:classifier:version')
-	.lib('//lib/junit', ['junit:junit:4.12', 'org.hamcrest:hamcrest-core:1.3']))
-	.run() // <- finishing move, required to launch the script execution
+  .lib('//lib/some/library', 'group:artifact:version')
+  .lib('//lib/other/library:classifier', 'group:artifact:classifier:version')
+  .lib('//lib/junit', ['junit:junit:4.12', 'org.hamcrest:hamcrest-core:1.3']))
+  .run() // <- finishing move, required to launch the script execution
 ```
 ### ".lib" definition
 
@@ -101,14 +101,15 @@ The third, optional, argument is used to pass options:
 * `options.deps` additional dependencies for the lib rules can be passed in form of an array of Buck targets. These are added as exported dependencies to the library rule
 * `options.processor` can specify Java annotation processor class. The processor option will turn a lib into an annotation processor "plugin". Plugins are added as `plugins` attribute array to a `java_library` rule. Additional `options.processorLibrary` used to add local rule name to define intermediate annotation processor library which can be used by external rules as a library as opposed to a plugin, the plugin will also be defined in this case but it will also add this processor library as dependency.
 
-* `options.srcs` can be used to specify alternative artifacts used to attach as source jars. The option accepts an array of Maven coordinates or a single Maven coordinates string. The number of src elements should be exactly the same as for library jars (second argument to `.lib` call) and have corresponding order, so they can be matched by position. This, probably, is a very rare case to hit, but can be useful if you need to use specific repackaged artifact for which there are no sources, but there are sources for a regular artifact. Also, an empty array can be supplied to suppress using source jars (in this case rule to have the same number of src jars as library jars does not apply).
-
 ```js
 // Immutables annotation processor example
 .lib('//lib/immutables/value', 'org.immutables:value:2.7.3', {
-	processor: 'org.immutables.processor.ProxyProcessor'
+  processor: 'org.immutables.processor.ProxyProcessor'
 })
 ```
+
+* `options.srcs` can be used to specify alternative artifacts used to attach as source jars. The option accepts an array of Maven coordinates or a single Maven coordinates string. The number of src elements should be exactly the same as for library jars (second argument to `.lib` call) and have corresponding order, so they can be matched by position. This, probably, is a very rare case to hit, but can be useful if you need to use specific repackaged artifact for which there are no sources, but there are sources for a regular artifact. Also, an empty array can be supplied to suppress using source jars (in this case rule to have the same number of src jars as library jars does not apply).
+
 * `options.repo` allows to specify remote repository for an artifact. Accepts uri prefix (no auto-slashes auto-added, leave trailing one) or a special values such as `'central'` for Maven Central and `jcenter` for Bintray's JCenter. When not specified, the default is to use Maven Central. The repo will be used for all artifacts in this library.
 
 ## "Lock" file and libraries
@@ -145,7 +146,7 @@ java_library(
   resources = glob(['src/**'], excludes = ['src/**/*.java']),
   resources_root = 'src', # <- Bingo! we have a module
   deps = [
-  	'//lib/google/common:common',
+    '//lib/google/common:common',
   ],
   tests = [':test'],
   visibility = ['PUBLIC'],

@@ -128,7 +128,12 @@ module.exports = {
     }
     ops.write(`.idea/modules/${mods.rootname}.iml`, moduleMainXml(this.excluded()))
     ops.write('.idea/modules.xml', modulesAllXml(mods))
-    ops.write('.idea/misc.xml', miscXml())
+    // It's questionable if we need to generate misc.xml
+    // Helps to get initial project setup with some SDKs (Java 8 SDK currently)
+    // But may conflict by overriding other settings (like JavaScript language level)
+    if (!ops.exists('.idea/misc.xml')) {
+      ops.write('.idea/misc.xml', miscXml())
+    }
   },
 
   // all folders at project root which do not contain modules

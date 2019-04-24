@@ -71,9 +71,12 @@ function mkdirs(d) {
 }
 
 function exists(path) {
-  if (use.trace) process.stderr.write(`${c.yel}${c.dim}exst?${c.res} ${c.yel}${path}${c.res}\n`)
   path = paths.join(use.workdir, path)
-  return fs.existsSync(path)
+  let exst = fs.existsSync(path)
+  if (use.trace) {
+    process.stderr.write(`${c.yel}${c.dim}exst?${c.res} ${c.yel}${path} ${c.dim}${exst?"(y)":"(n)"}${c.res}\n`)
+  }
+  return exst
 }
 
 function write(path, content) {
