@@ -9,11 +9,11 @@ module.exports = {
     let rules = buck.info('//...')
 
     for (let r of rules) {
-      if (['remote_file', 'java_binary'].includes(r[buck.attr.type])) {
+      if (['remote_file', 'genrule', 'java_binary'].includes(r[buck.attr.type])) {
         let output = r[buck.attr.outputPath] || '__no_output__'
         let file = r[buck.attr.out] || `${r[buck.attr.name]}.jar`
         let path = r[buck.attr.path]
-        ops.symlink(paths.join(path, '.jars', file), output)
+        ops.symlink(paths.join(path, '.out', file), output)
       }
     }
   },

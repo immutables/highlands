@@ -43,7 +43,7 @@ function moduleMainXml(excludes) {
 }
 
 function moduleXml(mod) {
-  let excludesFolders = ['.jars']
+  let excludesFolders = ['.out']
       .filter(dir => ops.exists(paths.join(mod.path, dir)))
       .map(dir => `
       <excludeFolder url="file://$MODULE_DIR$/../../${mod.path}/${dir}" isTestSource="false" />`)

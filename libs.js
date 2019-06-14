@@ -30,11 +30,11 @@ class Lib {
   }
 
   symlinkJar(jar) {
-    return paths.join(this.path, '.jars', `${jar.filenameJar}`)
+    return paths.join(this.path, '.out', `${jar.filenameJar}`)
   }
 
   symlinkSrc(jar) {
-    return paths.join(this.path, '.jars', `${jar.filenameSrc}`)
+    return paths.join(this.path, '.out', `${jar.filenameSrc}`)
   }
 
   toBuckRules() {
@@ -84,7 +84,16 @@ module.exports = {
   },
 
   uplock() {
-    if (this.all.length) return
+    if (this.all.length) {
+      ops.err('intenal problem: libraries already defined')
+      return
+    }
+    if (lock.exists()) {
+      // Load from lockfile to cache known checksums,
+      // however we are not applying libraries from lockfile
+      // by discarding the result
+      lock.load()
+    }
     this.staged.forEach(l => this.add(l))
     lock.store(this.staged)
   },
