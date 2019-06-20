@@ -110,6 +110,16 @@ function miscXml() {
 `
 }
 
+function kotlincXml() {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Kotlin2JvmCompilerArguments">
+    <option name="jvmTarget" value="1.8" />
+  </component>
+</project>
+`
+}
+
 module.exports = {
   genProject() {
     this.genLibs()
@@ -133,6 +143,9 @@ module.exports = {
     // But may conflict by overriding other settings (like JavaScript language level)
     if (!ops.exists('.idea/misc.xml')) {
       ops.write('.idea/misc.xml', miscXml())
+    }
+    if (!ops.exists('.idea/kotlinc.xml')) {
+      ops.write('.idea/kotlinc.xml', kotlincXml())
     }
   },
 
