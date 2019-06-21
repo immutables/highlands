@@ -172,6 +172,7 @@ The modules will have references to other modules in case they depend on rules f
 * Provided/exported/test dependency scopes are honored to the degree possible in specific IDE. Eclipse only supports "exported" dependencies.
 * Annotation processing will work from Buck build, and IDE will have generated sources attached. Support for in-IDE annotation processing can be added in future.
 * In Intellij, in the a module all folders are marked as excluded except the ones which contain modules.
+* Can create resource only `java_library` rule and add `label = ['ide_res']` or `label = ['ide_test_res']` to mark `resources_root` folder as java resources or test resources in Intellij IDEA. These rules still need to be added as dependency to any `java_library` rule which wants to access these resources on the classpath.
 
 _Note: clearly, you can skip using this script and just use `buck project --ide ij` if it suits your needs. We believe Highlands project generation adds some fine touches and may result in better IDE experience._
 
