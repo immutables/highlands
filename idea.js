@@ -49,8 +49,7 @@ function moduleXml(mod) {
       <excludeFolder url="file://$MODULE_DIR$/../../${mod.path}/${dir}" isTestSource="false" />`)
 
   let folders = Object.entries(mod.srcs).map(([p, f]) => `
-      <sourceFolder url="file://$MODULE_DIR$/../../${mod.path}/${p}"
-          isTestSource="${f.test}" generated="${f.gen}"/>`)
+      <sourceFolder url="file://$MODULE_DIR$/../../${mod.path}/${p}" ${folderAttributes(f)}/>`)
 
   let depmods = toValues(mod.depmods).map(d => `
     <orderEntry type="module" module-name="${d.mod.name}"
@@ -81,6 +80,11 @@ function moduleXml(mod) {
     if (dep.test) return 'TEST'
     if (dep.provided) return 'PROVIDED'
     return 'COMPILE'
+  }
+
+  function folderAttributes(f) {
+    if (f.res) return f.res.test ? `type="java-test-resource"` : `type="java-resource"`
+    return `isTestSource="${f.test}" generated="${f.gen}"`
   }
 }
 

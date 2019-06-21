@@ -19,7 +19,7 @@ class Mod {
   }
 
   toString() {
-    return `//${this.path} (${Object.keys(this.srcs).join(', ')})`
+    return `//${this.path} [${this.name}] ${Object.keys(this.srcs).join(', ')}`
   }
 }
 
@@ -87,6 +87,9 @@ const mods = {
         srcs[resFolder] = {
           test: isTest || (existing ? existing.test : false),
           path: resFolder,
+          res: hasLabel(rule, 'ide_res') ? {test:false}
+            : hasLabel(rule, 'ide_test_res') ? {test:true}
+            : false,
           gen: false,
         }
       }
@@ -201,7 +204,7 @@ const mods = {
       }
 
       function pathDerivedName(m) {
-        return m.path.replace(/[-/]/g, '_')
+        return m.path.replace(/[_/]/g, '-')
       }
 
       function assignUniqueName(m, name) {
@@ -242,10 +245,13 @@ const mods = {
       return /.+_test$/.test(rule[buck.attr.type] || '')
     }
 
+    function hasLabel(rule, label) {
+      return (rule[buck.attr.labels] || []).includes(label)
+    }
+
     function isModuleOrigin(target, rule) {
       return target.isDefault
-          && (rule[buck.attr.resourcesRoot]
-              || (rule[buck.attr.labels] || []).includes('ide_mod'))
+          && (rule[buck.attr.resourcesRoot] || hasLabel(rule, 'ide_mod'))
     }
 
     function usesCodegen(rule) {
