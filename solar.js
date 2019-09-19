@@ -51,7 +51,7 @@ function dotClasspath(m) {
 
   let depmods = []
 
-  for (let d of toValues(m.depmods)) {
+  for (let d of Object.values(m.depmods)) {
     depmods.push(`
   <!-- ${d.mod.path}  ${d.mod.name} -->
   <classpathentry kind="src" path="/${projectName(d.mod)}"${d.exported ? ' exported="true"':''} combineaccessrules="false"/>`)
@@ -59,7 +59,7 @@ function dotClasspath(m) {
 
   let deplibs = []
 
-  for (let d of toValues(m.deplibs)) {
+  for (let d of Object.values(m.deplibs)) {
     for (let i in d.lib.jars) {
       let j = d.lib.jars[i]
       let s = d.lib.srcs[i]
@@ -87,10 +87,6 @@ function projectName(m) {
   return `${mods.rootname}.${m.name}`
 }
 
-function toValues(o) {
-  return Object.keys(o).map(k => o[k])
-}
-
 module.exports = {
   genProject() {
     ops.write('.project', dotProject(mods.rootname, {
@@ -99,7 +95,7 @@ module.exports = {
     for (let m of mods.all) {
       ops.write(`${m.path}/.project`, dotProject(projectName(m), {
         natures: 'java',
-        projects: toValues(m.depmods).map(m => projectName(m.mod))
+        projects: Object.values(m.depmods).map(m => projectName(m.mod))
       }))
       ops.write(`${m.path}/.classpath`, dotClasspath(m))
     }
