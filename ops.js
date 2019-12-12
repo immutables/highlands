@@ -79,11 +79,35 @@ function exists(path) {
   return exst
 }
 
+function deltree(path) {
+  path = paths.join(use.workdir, path)
+  if (fs.existsSync(path)) {
+    if (use.trace) process.stderr.write(`${c.red}${c.dim}dir-- ${path}${c.res}\n`)
+    let command = `rm -rf ${path}`
+    let stdout = childProcess.execSync(command, {
+      encoding: 'utf-8', stdio: [
+        /*stdin*/'pipe',
+        /*stdout*/'pipe',
+        /*stderr*/use.trace ? 'inherit' : 'ignore'
+      ]
+    })
+    if (stdout.trim()) console.log(stdout)
+  }
+}
+
 function write(path, content) {
   if (use.trace) process.stderr.write(`${c.blu}${c.dim}file>${c.res} ${c.blu}${path}${c.res}\n`)
   path = paths.join(use.workdir, path)
   mkdirs(paths.dirname(path))
   fs.writeFileSync(path, content, 'utf-8')
+}
+
+function unlink(path) {
+  path = paths.join(use.workdir, path)
+  if (fs.existsSync(path)) {
+    if (use.trace) process.stderr.write(`${c.red}${c.dim}file- ${path}${c.res}\n`)
+    fs.unlinkSync(path)
+  }
 }
 
 function read(path) {
@@ -101,5 +125,5 @@ function fetch(url) {
 }
 
 module.exports = {
-  exec, info, ok, err, fetch, ls, read, write, exists, symlink, use
+  exec, info, ok, err, fetch, ls, read, write, exists, symlink, use, unlink, mkdirs, deltree
 }

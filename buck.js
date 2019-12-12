@@ -195,6 +195,7 @@ const attr = {
   exportedDeps: 'exportedDeps',
   providedDeps: 'providedDeps',
   exportedProvidedDeps: 'exportedProvidedDeps',
+  mavenCoords: 'mavenCoords',
 }
 
 module.exports = {

@@ -8,6 +8,7 @@ const idea = require('./idea')
 const solar = require('./solar')
 const args = require('./args')
 const ops = require('./ops')
+const pub = require('./pub')
 
 const opts = args({
   '--help': ['Prints usage and option hints', function() {
@@ -40,6 +41,13 @@ const opts = args({
     syms.linkGenSrc()
     solar.genProject()
   }],
+  '--pub': ['Publish artifacts', () => {
+    libs.prepare()
+    mods.discover()
+    pub.prepare()
+    console.error(String(pub))
+    pub.publish()
+  }],
   '--mvn': ['Prints JSON info about Maven coordinates', (coords) => {
     let info = mvn.coords(coords).info
     console.log(JSON.stringify(info, null, 2))
@@ -58,6 +66,14 @@ const opts = args({
 module.exports = {
   lib(target, jars, options) {
     libs.stage(target, jars, options)
+    return this
+  },
+  zip(dir, options) {
+    pub.zip(dir, options)
+    return this
+  },
+  include(exports) {
+    exports(this)
     return this
   },
   run() {
