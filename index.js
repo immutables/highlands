@@ -9,6 +9,7 @@ const solar = require('./solar')
 const args = require('./args')
 const ops = require('./ops')
 const pub = require('./pub')
+const grab = require('./grab')
 
 const opts = args({
   '--help': ['Prints usage and option hints', function() {
@@ -17,6 +18,13 @@ const opts = args({
   '--trace': ['Enable tracing of command line calls and created files', () => {
     ops.use.trace = true
   }, 2],
+  '--grab': ['Fetches predefined grab files returning downloaded file location', (target) => {
+    target = buck.target(target)
+    grab.genBuckfile(target.path)
+    buck.fetch(target.pattern)
+    syms.linkOutput(target.pattern)
+    console.log(grab.get(target))
+  }, 3],
   '--uplock': ['Use up.js library definitions to update lib lock', () => {
     libs.uplock()
   }, 5],
@@ -24,8 +32,9 @@ const opts = args({
     libs.prepare()
     console.error(String(libs))
     libs.genBuckfiles()
-    buck.fetchAll()
-    syms.linkJars()
+    grab.genBuckfiles()
+    buck.fetch()
+    syms.linkOutput()
   }, 10],
   '--intellij': ['Generates project for Intellij IDEA', () => {
     libs.prepare()
@@ -41,7 +50,7 @@ const opts = args({
     syms.linkGenSrc()
     solar.genProject()
   }],
-  '--pub': ['Publish artifacts', () => {
+  '--publish': ['Publish artifacts, zip archives and library JS files', () => {
     libs.prepare()
     mods.discover()
     pub.prepare()
@@ -56,7 +65,7 @@ const opts = args({
   before: (_, hint) => ops.info(`${hint}`),
   end: () => ops.ok('OK'),
   err: (e) => {
-    ops.err(`ERR ${e}`)
+    ops.err(`FAIL ${e}`)
     if (ops.use.trace) {
       console.trace(e)
     }
@@ -72,8 +81,12 @@ module.exports = {
     pub.zip(dir, options)
     return this
   },
-  include(exports) {
-    exports(this)
+  include(script) {
+    libs.include(script)
+    return this
+  },
+  grab(target, coords, options) {
+    grab.stage(target, coords, options)
     return this
   },
   run() {

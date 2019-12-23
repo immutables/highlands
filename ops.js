@@ -26,6 +26,10 @@ function ls(path) {
   return fs.readdirSync(path, {withFileTypes: true})
 }
 
+function lesser(message) {
+  process.stderr.write(`${c.yel}${c.dim}${message}${c.res}\n`)
+}
+
 function info(message) {
   process.stderr.write(`${c.yel}${message}${c.res}\n`)
 }
@@ -125,5 +129,5 @@ function fetch(url) {
 }
 
 module.exports = {
-  exec, info, ok, err, fetch, ls, read, write, exists, symlink, use, unlink, mkdirs, deltree
+  exec, info, ok, err, fetch, ls, read, write, exists, symlink, use, unlink, mkdirs, deltree, lesser
 }

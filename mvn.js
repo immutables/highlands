@@ -6,11 +6,17 @@ const REPO = {
   jcenter: 'https://jcenter.bintray.com/',
 }
 
+// There are also idea to use whatever is configured in buck config
+// but we're not there yet
+const repoDefault = 'central'
+const repoEnvironment = process.env.FETCH_REPOSITORY
+
 const EXT = {
   jar: '.jar',
   src: '-sources.jar',
   jar_sum: '.jar.sha1',
   src_sum: '-sources.jar.sha1',
+  sum: '.sha1',
 }
 
 class Coords {
@@ -50,6 +56,10 @@ class Coords {
     return sums.get(this, EXT.src_sum)
   }
 
+  checksumByExt(ext) {
+    return sums.get(this, ext)
+  }
+
   fetchChecksumJar(nofail) {
     return sums.fetch(this, EXT.jar_sum, nofail)
   }
@@ -64,7 +74,7 @@ class Coords {
   }
 
   get remote() {
-    return this.repo + this.path + this.filename
+    return this.repo + '/' + this.path + this.filename
   }
 
   get info() {
@@ -105,8 +115,10 @@ function repo(options) {
   // to lookup repo uri prefix, but if it's neither then if none specified
   // we use 'central' as default, otherwise if specified -
   // we use this as URI prefix directly
-  let repo = options && options.repo || 'central'
-  return REPO[repo] || repo
+  let repo = options && options.repo || repoEnvironment || repoDefault
+  return (REPO[repo] || repo).replace(/\/$/, '')
+  // removes last slash because we will always insert one after path prefix
+  // and before group id path (see 'get remote()')
 }
 
 module.exports = {

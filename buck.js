@@ -17,6 +17,10 @@ class Target {
     return this.path ? paths.basename(this.path) : ''
   }
 
+  get pattern() {
+    return `${this.path}/...`
+  }
+
   get isDefault() {
     return this.basename === this.goal
   }
@@ -137,6 +141,19 @@ java_annotation_processor(
 `
 }
 
+function ruleRemoteFile(target, coords, type, ext, checksumExt) {
+  return `
+remote_file(
+  name = '${target.goal}',
+  out = '${coords.filename}${ext}',
+  url = '${coords.remote}${ext}',
+  sha1 = '${coords.checksumByExt(checksumExt)}',
+  type = '${type}',
+  visibility = ['PUBLIC'],
+)
+`
+}
+
 function rules(target, jars, srcs, options) {
   let mainRule = options.processor
       ? ruleJavaAnnotationProcessor(target, jars, options)
@@ -163,8 +180,9 @@ function info(pattern) {
           JSON.parse(ops.exec(`buck targets "${pattern}" --json --show-output`)))
 }
 
-function fetchAll() {
-  ops.exec('buck fetch //...')
+function fetch(pattern) {
+  pattern = pattern || '//...'
+  ops.exec(`buck fetch ${pattern}`)
 }
 
 const remote = {
@@ -199,5 +217,5 @@ const attr = {
 }
 
 module.exports = {
-  target, rules, remote, attr, query, info, fetchAll, dropCache
+  target, rules, remote, attr, query, info, fetch, dropCache, ruleRemoteFile
 }
