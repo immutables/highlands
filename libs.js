@@ -76,8 +76,16 @@ module.exports = {
     return ['Libraries', ...this.all].map(String).join('\n\t')
   },
 
-  include(requirePath) {
-    this.includes.push(requirePath)
+  include(loader, options) {
+    // loader should be parameterless callback to
+    // call require from the context of the caller
+    // or anything which supplies function that called
+    // and it replays .lib directives
+    // loader: ()=>(libs, options)=>void
+    // where
+    // libs: {lib: ()=>Self}
+    // options: {repo}
+    this.includes.push({loader, options})
   },
 
   prepare() {
@@ -106,8 +114,14 @@ module.exports = {
     // library scripts, not the full set directives on `up` object
     // we do look at includes when regenerating libraries/lock file
     // and ignore those includes when just redoing libraries from lock etc
-    for (let p of this.includes) {
-      require(p)({ lib: (...args) => this.stage(...args) })
+    for (let {loader, options} of this.includes) {
+      let self = this
+      loader()({
+        lib(...args) {
+          self.stage(...args)
+          return this
+        }
+      }, options)
     }
     this.includes = []
 
