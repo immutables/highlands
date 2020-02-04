@@ -120,6 +120,13 @@ function read(path) {
   return fs.readFileSync(path, {encoding: 'utf-8'})
 }
 
+function copy(from, to) {
+  if (use.trace) process.stderr.write(`${c.blu}${c.dim}file${c.res} ${c.blu} ${from} > ${to}${c.res}\n`)
+  const fromAbsolute = paths.join(use.workdir, from)
+  const toAbsolute = paths.join(use.workdir, to)
+  fs.copyFileSync(fromAbsolute, toAbsolute)
+}
+
 // in the scope of a single script execution is just
 // fine to cache any fetch
 const fetchCache = {}
@@ -129,5 +136,5 @@ function fetch(url) {
 }
 
 module.exports = {
-  exec, info, ok, err, fetch, ls, read, write, exists, symlink, use, unlink, mkdirs, deltree, lesser
+  exec, info, ok, err, fetch, ls, read, write, copy, exists, symlink, use, unlink, mkdirs, deltree, lesser
 }

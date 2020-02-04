@@ -100,26 +100,27 @@ remote_file(
 }
 
 function ruleJavaLibrary(t, jars, options) {
-  let deps = jars.map(j => `':${flatname(j)}'`)
-      .concat((options.deps || []).map(target).map(d => `'${d}'`))
   return `
 java_library(
   name = '${t.goal}',
-  exported_deps = [${deps.join(', ')}],
+  exported_deps = [${(toBuckDeps(jars, options))}],
   visibility = ['PUBLIC'],
 )
 `
 }
 
-function ruleJavaAnnotationProcessor(t, jars, options) {
-  let deps = jars.map(j => `':${flatname(j)}'`)
+function toBuckDeps(jars, options) {
+  return jars.map(j => `':${flatname(j)}'`)
       .concat((options.deps || []).map(target).map(d => `'${d}'`))
+      .join(', ');
+}
 
+function ruleJavaAnnotationProcessor(t, jars, options) {
   if (options.processorLibrary) {
     return `
 java_library(
   name = '${options.processorLibrary}',
-  exported_deps = [${deps.join(', ')}],
+  exported_deps = [${(toBuckDeps(jars, options))}],
   visibility = ['PUBLIC'],
 )
 
@@ -134,10 +135,21 @@ java_annotation_processor(
   return `
 java_annotation_processor(
   name = '${t.goal}',
-  deps = [${deps.join(', ')}],
+  deps = [${toBuckDeps(jars, options)}],
   processor_class = '${options.processor}',
   visibility = ['PUBLIC'],
 )
+`
+}
+
+function ruleJavaBinary(t, jars, options) {
+  return `
+java_binary(
+  name = '${t.goal}',
+  deps = [${toBuckDeps(jars, options)}],
+  main_class = '${options.main}',
+  visibility = ['PUBLIC'],
+)  
 `
 }
 
@@ -155,9 +167,14 @@ remote_file(
 }
 
 function rules(target, jars, srcs, options) {
-  let mainRule = options.processor
-      ? ruleJavaAnnotationProcessor(target, jars, options)
-      : ruleJavaLibrary(target, jars, options)
+  let mainRule;
+  if (options.processor) {
+    mainRule = ruleJavaAnnotationProcessor(target, jars, options);
+  } else if (options.main) {
+    mainRule = ruleJavaBinary(target, jars, options)
+  } else {
+    mainRule = ruleJavaLibrary(target, jars, options);
+  }
 
   let prebuiltJars = jars.map((j, i) => rulePrebuiltJar(j, srcs[i]))
   return [mainRule, ...prebuiltJars]

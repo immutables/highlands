@@ -16,47 +16,89 @@ const localRepo = `file://${outDir}`
 const repository = (process.env[env.repository] || '').replace(/\/$/, '')
 const kvSamePlaceholder = '<&>'
 const javaRules = {java_library: true, kotlin_library: true}
-const stringsArrayKeys = {deps:true, exclude:true, content:true}
+const stringsArrayKeys = {exclude:true, content:true}
 
-const stagedDirs = []
-let dirs, conf, artifacts
+const stagedObjects = []
+let publishTargets, conf, artifacts
 
-class Zip {
+class PublishTarget {
 
-  constructor(dir, options) {
-    this.dir = dir
-    this.options = options
-  }
-
-  get version() {
+  get versionSuffix() {
     let v = version()
     return v ? '-' + v : ''
   }
 
-  get filename() {
-    return `${this.dir}${this.version}.zip`
-  }
-
-  get repositoryPath() {
-    return `${repositoryPath()}/${this.dir}/${version()}`
-  }
-
-  get archive() {
+  get file() {
     // putting it under repositoryPath in outDir doesn't work with zip for some reason
     return `${outDir}/${this.filename}`
   }
 
-  push() {
-    upload(this.archive, `${this.repositoryPath}/${this.filename}`)
+  get filename() {
+    throw Error("Subclass should override this property")
   }
 
-  pack() {
+  get repoDir() {
+    throw Error("Subclass should override this property")
+  }
+
+  prepare() {
+    //noop
+  }
+
+  get repositoryPath() {
+    return `${repositoryPath()}/${this.repoDir}/${version()}`
+  }
+
+  push() {
+    upload(this.file, `${this.repositoryPath}/${this.filename}`)
+  }
+}
+
+class FatJar extends PublishTarget {
+  constructor(pattern, options) {
+    super();
+    this.target = buck.target(pattern)
+    this.options = options
+  }
+
+
+  get filename() {
+    return `${this.target.basename}-${this.target.goal}${this.versionSuffix}.jar`
+  }
+
+  get repoDir() {
+    return `${this.target.basename}-${this.target.goal}`
+  }
+
+  prepare() {
+    const [{[buck.attr.outputPath]: outFile}] = buck.info(this.target)
+    ops.copy(outFile, this.file)
+  }
+}
+
+class Zip extends PublishTarget {
+
+  constructor(dir, options) {
+    super();
+    this.dir = dir
+    this.options = options
+  }
+
+  get filename() {
+    return `${this.dir}${this.versionSuffix}.zip`
+  }
+
+  get repoDir() {
+    return this.dir;
+  }
+
+  prepare() {
     let content = [].concat(this.options.content || this.dir).join(' ')
-    let exclude = [].concat(this.options.exclude || []).map(x => `-x '${x}'`).join(' ')
+    let exclude = [].concat(this.options.exclude || []).map(x => `-not -name '${x}'`).join(' ')
 
-    ops.unlink(this.archive)
+    ops.unlink(this.file)
 
-    ops.exec(`zip -r ${this.archive} ${content} ${exclude}`)
+    ops.exec(`cd ${content} && find . -type f ${exclude} -exec zip ../${this.file} {} +`)
   }
 
   toString() {
@@ -78,9 +120,12 @@ function repositoryPath() {
   return conf['maven.publish_group'].replace(/\./g, '/')
 }
 
-function zip(dir, options) {
-  options = options || {}
-  stagedDirs.push(new Zip(trimSlashes(dir), options))
+function zip(dir, options = {}) {
+  stagedObjects.push(new Zip(trimSlashes(dir), options))
+}
+
+function fatJar(target, options = {}) {
+  stagedObjects.push(new FatJar(target, options))
 }
 
 function upload(file, repositoryFilename) {
@@ -135,9 +180,19 @@ function uploadJs() {
 
 function optionsOf(a) {
   // not sure this is best or correct set of dependencies
-  let deps = buck.query(`deps('${targetOf(a)}', 1, first_order_deps())`)
-  if (deps.length) return { deps, repo: kvSamePlaceholder }
-  return {}
+  // probably should work without first_order_deps()
+  let target = targetOf(a);
+  let deps = buck.query(`deps('${target}', 1, first_order_deps())`)
+  let selfIndex = deps.indexOf(target);
+  if (selfIndex !== -1) {
+    deps.splice(selfIndex, 1)
+  }
+  let result = {srcs: []}
+  if (deps.length) {
+    result['deps'] = deps.filter(d => !isAnnotationProcessor(d))
+    result['repo'] = kvSamePlaceholder
+  }
+  return result
 }
 
 function targetOf(a) { return a[buck.attr.qname] }
@@ -147,6 +202,15 @@ function jarOf(a) { return a[buck.attr.mavenCoords] }
 function ruleOf(a) { return a[buck.attr.type] }
 
 function quote(a) { return `'${a}'` }
+
+function isAnnotationProcessor(p) {
+  return !!processorClassOf(p)
+}
+
+function processorClassOf(p) {
+  let definition = libs.byTarget[p];
+  return definition && definition.options && definition.options.processor
+}
 
 function options(o) {
   let ks = Object.keys(o)
@@ -173,12 +237,12 @@ function strings(strings, indent) {
 }
 
 function prepare() {
-  if (dirs) return // noop if already consumed stagesDir
+  if (publishTargets) return // noop if already consumed stagedObjects
 
-  dirs = stagedDirs
+  publishTargets = stagedObjects
   conf = JSON.parse(ops.exec(`buck audit config maven --json`))
   // Only jars we want to publish will end up here
-  // we will not pickup generated libraries here as thay have
+  // we will not pickup generated libraries here as they have
   // maven_coords on a prebuilt_jar rule, not on a corresponding java_library
   artifacts = buck.info(`//...`)
       .filter(t => ruleOf(t) in javaRules && jarOf(t))
@@ -218,20 +282,20 @@ function publish() {
   // console.log(ops.exec(`echo "${env.username}=$${env.username} ${env.password}=$${env.password} ${env.repository}=$${env.repository}"`))
   uploadJs()
 
-  dirs.forEach(d => d.pack())
+  publishTargets.forEach(d => d.prepare())
   publishArtifacts()
-  dirs.forEach(d => d.push())
+  publishTargets.forEach(d => d.push())
 }
 
 module.exports = {
-  prepare, zip, publish,
+  prepare, zip, fatJar, publish,
 
   toString() {
     return [
         'Artifacts',
         ...artifacts.map(t => '\t' + targetOf(t) + ' [' + jarOf(t) + ']'),
         'Archives',
-        ...dirs.map(d => '\t' + d)
+        ...publishTargets.map(d => '\t' + d)
     ].join('\n')
   }
 }
