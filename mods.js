@@ -166,12 +166,12 @@ const mods = {
       }
 
       function merge(a, b) {
-        if (String(a.target) !== String(b.target)) throw 'cannot merge dependencies'
+        const {test, provided, exported, ...rest} = a
         return {
-          target: a.target,
-          test: a.test && b.test, // if any rule in module use it not for test
-          provided: a.provided && b.provided,
-          exported: a.exported || b.exported,
+          test: test && b.test, // if any rule in module use it not for test
+          provided: provided && b.provided,
+          exported: exported || b.exported,
+          ...rest
         }
       }
     }
@@ -212,6 +212,21 @@ const mods = {
       }
     }
 
+    function collectTransitiveDependencies(target) {
+      const result = new Set()
+      const toProcess = [target]
+      while (toProcess.length > 0) {
+        let d = toProcess.shift();
+        if (result.has(d)) continue
+        result.add(d)
+        let deplib = libs.byTarget[d]
+        if (deplib) {
+          toProcess.push(...((deplib.options.deps || []).map(buck.target).map(String)))
+        }
+      }
+      return [...result]
+    }
+
     function wireDependencies() {
       for (let [p, m] of Object.entries(moduleByPath)) {
         for (let [t, dep] of Object.entries(m.deps)) {
@@ -219,16 +234,14 @@ const mods = {
             let mod = moduleByTarget[t]
             m.depmods[mod.path] = Object.assign({}, dep, {mod})
           } else if (t in libs.byTarget) {
-            let lib = libs.byTarget[t]
-            m.deplibs[lib.target] = Object.assign({}, dep, {lib})
-            // this part processes first-order deps of the library in a fairly
-            // Ad Hoc manner and overall questionable
-            for (let depkey of (lib.options.deps || []).map(buck.target).map(String)) {
-              let deplib = libs.byTarget[depkey]
-              if (deplib) {
-                m.deplibs[depkey] = Object.assign({}, dep, {lib:deplib})
-              }
-            }
+            const deplibs = collectTransitiveDependencies(t)
+                .filter(dk => !!libs.byTarget[dk])
+                .reduce((r, depkey) => {
+                  r[depkey] = Object.assign({}, dep, {lib: libs.byTarget[depkey]})
+                  return r
+                }, {})
+            mergeDeps(m.deplibs, deplibs)
+
           } else if (buck.target(t).isLocal) {
             // local dependency should be implicit in IDE
           } else {

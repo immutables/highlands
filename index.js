@@ -81,6 +81,10 @@ module.exports = {
     pub.zip(dir, options)
     return this
   },
+  fatJar(target, options) {
+    pub.fatJar(target, options)
+    return this
+  },
   include(script) {
     libs.include(script)
     return this
