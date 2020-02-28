@@ -41,9 +41,7 @@ class PublishTarget {
     throw Error("Subclass should override this property")
   }
 
-  prepare() {
-    //noop
-  }
+  prepare() {}
 
   get repositoryPath() {
     return `${repositoryPath()}/${this.repoDir}/${version()}`
@@ -55,12 +53,11 @@ class PublishTarget {
 }
 
 class FatJar extends PublishTarget {
+
   constructor(pattern, options) {
-    super();
     this.target = buck.target(pattern)
     this.options = options
   }
-
 
   get filename() {
     return `${this.target.basename}-${this.target.goal}${this.versionSuffix}.jar`
@@ -79,7 +76,6 @@ class FatJar extends PublishTarget {
 class Zip extends PublishTarget {
 
   constructor(dir, options) {
-    super();
     this.dir = dir
     this.options = options
   }
@@ -89,7 +85,7 @@ class Zip extends PublishTarget {
   }
 
   get repoDir() {
-    return this.dir;
+    return this.dir
   }
 
   prepare() {
@@ -181,9 +177,9 @@ function uploadJs() {
 function optionsOf(a) {
   // not sure this is best or correct set of dependencies
   // probably should work without first_order_deps()
-  let target = targetOf(a);
+  let target = targetOf(a)
   let deps = buck.query(`deps('${target}', 1, first_order_deps())`)
-  let selfIndex = deps.indexOf(target);
+  let selfIndex = deps.indexOf(target)
   if (selfIndex !== -1) {
     deps.splice(selfIndex, 1)
   }
@@ -208,7 +204,7 @@ function isAnnotationProcessor(p) {
 }
 
 function processorClassOf(p) {
-  let definition = libs.byTarget[p];
+  let definition = libs.byTarget[p]
   return definition && definition.options && definition.options.processor
 }
 

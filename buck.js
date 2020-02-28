@@ -112,7 +112,7 @@ java_library(
 function toBuckDeps(jars, options) {
   return jars.map(j => `':${flatname(j)}'`)
       .concat((options.deps || []).map(target).map(d => `'${d}'`))
-      .join(', ');
+      .join(', ')
 }
 
 function ruleJavaAnnotationProcessor(t, jars, options) {
@@ -149,7 +149,7 @@ java_binary(
   deps = [${toBuckDeps(jars, options)}],
   main_class = '${options.main}',
   visibility = ['PUBLIC'],
-)  
+)
 `
 }
 
@@ -167,17 +167,13 @@ remote_file(
 }
 
 function rules(target, jars, srcs, options) {
-  let mainRule;
-  if (options.processor) {
-    mainRule = ruleJavaAnnotationProcessor(target, jars, options);
-  } else if (options.main) {
-    mainRule = ruleJavaBinary(target, jars, options)
-  } else {
-    mainRule = ruleJavaLibrary(target, jars, options);
-  }
+  let libRule =
+      options.processor ? ruleJavaAnnotationProcessor(target, jars, options) :
+      options.main ? ruleJavaBinary(target, jars, options) :
+      ruleJavaLibrary(target, jars, options)
 
   let prebuiltJars = jars.map((j, i) => rulePrebuiltJar(j, srcs[i]))
-  return [mainRule, ...prebuiltJars]
+  return [libRule, ...prebuiltJars]
 }
 
 function query(input, attrs) {

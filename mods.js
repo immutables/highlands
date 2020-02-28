@@ -166,7 +166,7 @@ const mods = {
       }
 
       function merge(a, b) {
-        const {test, provided, exported, ...rest} = a
+        let {test, provided, exported, ...rest} = a
         return {
           test: test && b.test, // if any rule in module use it not for test
           provided: provided && b.provided,
@@ -213,10 +213,10 @@ const mods = {
     }
 
     function collectTransitiveDependencies(target) {
-      const result = new Set()
-      const toProcess = [target]
+      let result = new Set()
+      let toProcess = [target]
       while (toProcess.length > 0) {
-        let d = toProcess.shift();
+        let d = toProcess.shift()
         if (result.has(d)) continue
         result.add(d)
         let deplib = libs.byTarget[d]
@@ -234,7 +234,7 @@ const mods = {
             let mod = moduleByTarget[t]
             m.depmods[mod.path] = Object.assign({}, dep, {mod})
           } else if (t in libs.byTarget) {
-            const deplibs = collectTransitiveDependencies(t)
+            let deplibs = collectTransitiveDependencies(t)
                 .filter(dk => !!libs.byTarget[dk])
                 .reduce((r, depkey) => {
                   r[depkey] = Object.assign({}, dep, {lib: libs.byTarget[depkey]})
@@ -273,7 +273,7 @@ const mods = {
     }
 
     function putInc(object, field, value) {
-      for (let s = '';; s = String((Number(s) || 0) + 1)) {
+      for (let s = ''; s = String((Number(s) || 0) + 1)) {
         let alias = field + s
         if (!(alias in object)) {
           object[alias] = value
