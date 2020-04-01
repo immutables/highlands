@@ -273,7 +273,7 @@ const mods = {
     }
 
     function putInc(object, field, value) {
-      for (let s = ''; s = String((Number(s) || 0) + 1)) {
+      for (let s = '';; s = String((+s || 0) + 1)) {
         let alias = field + s
         if (!(alias in object)) {
           object[alias] = value

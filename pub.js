@@ -55,6 +55,7 @@ class PublishTarget {
 class FatJar extends PublishTarget {
 
   constructor(pattern, options) {
+    super()
     this.target = buck.target(pattern)
     this.options = options
   }
@@ -76,6 +77,7 @@ class FatJar extends PublishTarget {
 class Zip extends PublishTarget {
 
   constructor(dir, options) {
+    super()
     this.dir = dir
     this.options = options
   }
