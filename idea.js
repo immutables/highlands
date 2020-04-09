@@ -3,6 +3,7 @@ const paths = require('path')
 const ops = require('./ops')
 const libs = require('./libs')
 const mods = require('./mods')
+const buck = require('./buck')
 
 function libraryXml(lib) {
   let classesRoots = lib.jars.map(j => `
@@ -102,9 +103,11 @@ function modulesAllXml(mods) {
 }
 
 function miscXml() {
+  let level = buck.javaLevel()
+  let lang = `JDK_${level.source.replace('.','_')}`
   return `<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ProjectRootManager" version="2" default="false" languageLevel="JDK_1_8" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" default="false" languageLevel="${lang}" project-jdk-name="${level.source}" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/.idea/.out" />
   </component>
 </project>
@@ -112,10 +115,11 @@ function miscXml() {
 }
 
 function kotlincXml() {
+  let level = buck.javaLevel()
   return `<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Kotlin2JvmCompilerArguments">
-    <option name="jvmTarget" value="1.8" />
+    <option name="jvmTarget" value="${level.target}" />
   </component>
 </project>
 `

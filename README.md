@@ -172,19 +172,21 @@ The modules will have references to other modules in case they depend on rules f
 * Provided/exported/test dependency scopes are honored to the degree possible in specific IDE. Eclipse only supports "exported" dependencies.
 * Annotation processing will work from Buck build, and IDE will have generated sources attached. Support for in-IDE annotation processing can be added in future.
 * In Intellij, in the a module all folders are marked as excluded except the ones which contain modules.
-* Can create resource only `java_library` rule and add `label = ['ide_res']` or `label = ['ide_test_res']` to mark `resources_root` folder as java resources or test resources in Intellij IDEA. These rules still need to be added as dependency to any `java_library` rule which wants to access these resources on the classpath.
+* Can create resource-only `java_library` rule and add `label = ['ide_res']` or `label = ['ide_test_res']` to mark `resources_root` folder as java resources or test resources in Intellij IDEA. These rules still need to be added as dependency to any `java_library` rule which wants to access these resources on the classpath.
 
 _Note: clearly, you can skip using this script and just use `buck project --ide ij` if it suits your needs. We believe Highlands project generation adds some fine touches and may result in better IDE experience._
 
 ## Miscellaneous
 
-* Only Java 8 is supported as of now. But we eagerly await Buck to be upgraded to Java 11 and we will upgrade likewise.
+* Only Java 8, 9, 10, 11, 12, 13 seems to be supported as of now. In `.buckconfig`, use `tools.javac`, `tools.java`, `java.source_level`, `java.target_level` to configure. Buck itself only runs under Java 8, so for 9+ only external compiler/vm should be used.
 
 * This repo is released by tagging, you can use released zip from Github or clone the repo and use/copy from there. Make sure to calculate and verify checksum if in any automatic download script.
 
 * Add `--trace` CLI option every time you're investigating/troubleshooting script execution, this will give nice colored output providing tracing information about shell commands called and files/symlinks created.
 
 <img src="https://raw.githubusercontent.com/immutables/highlands/example/colored-trace.png">
+
+* `--publish` can publish artifacts (libraries having `maven_coords` set), also java binaries via `.fatJar(target)` and zip archives `.zip(folder, options)` declared in `up.js`. It publishes to maven-like repository (configured via `PUBLISH_REPOSITORY`, `PUBLISH_USERNAME`, `PUBLISH_PASSWORD` env variables) or local `.out` folder if no remote repo provided
 
 ## Example
 

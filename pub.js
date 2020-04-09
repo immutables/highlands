@@ -17,6 +17,7 @@ const repository = (process.env[env.repository] || '').replace(/\/$/, '')
 const kvSamePlaceholder = '<&>'
 const javaRules = {java_library: true, kotlin_library: true}
 const stringsArrayKeys = {exclude:true, content:true}
+const defaultVersion = '0-SNAPSHOT', defaultGroup = 'group'
 
 const stagedObjects = []
 let publishTargets, conf, artifacts
@@ -50,6 +51,10 @@ class PublishTarget {
   push() {
     upload(this.file, `${this.repositoryPath}/${this.filename}`)
   }
+
+  toString() {
+    return this.constructor.name
+  }
 }
 
 class FatJar extends PublishTarget {
@@ -71,6 +76,10 @@ class FatJar extends PublishTarget {
   prepare() {
     const [{[buck.attr.outputPath]: outFile}] = buck.info(this.target)
     ops.copy(outFile, this.file)
+  }
+
+  toString() {
+    return `${this.filename}`
   }
 }
 
@@ -111,11 +120,11 @@ class Zip extends PublishTarget {
 }
 
 function version() {
-  return conf['maven.publish_ver']
+  return conf['maven.publish_ver'] || defaultVersion
 }
 
 function repositoryPath() {
-  return conf['maven.publish_group'].replace(/\./g, '/')
+  return (conf['maven.publish_group'] || defaultGroup).replace(/\./g, '/')
 }
 
 function zip(dir, options = {}) {
@@ -238,7 +247,7 @@ function prepare() {
   if (publishTargets) return // noop if already consumed stagedObjects
 
   publishTargets = stagedObjects
-  conf = JSON.parse(ops.exec(`buck audit config maven --json`))
+  conf = buck.conf()
   // Only jars we want to publish will end up here
   // we will not pickup generated libraries here as they have
   // maven_coords on a prebuilt_jar rule, not on a corresponding java_library

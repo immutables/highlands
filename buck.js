@@ -181,10 +181,12 @@ function query(input, attrs) {
   return JSON.parse(ops.exec(`buck query "${input}" --json ${attrs}`))
 }
 
+let cachedConf
 let cachedInfo = {}
 
 function dropCache() {
   cachedInfo = {}
+  cachedConf = undefined
 }
 
 function info(pattern) {
@@ -196,6 +198,22 @@ function info(pattern) {
 function fetch(pattern) {
   pattern = pattern || '//...'
   ops.exec(`buck fetch ${pattern}`)
+}
+
+function conf() {
+  return cachedConf
+      || (cachedConf = JSON.parse(ops.exec(`buck audit config --json`)))
+}
+
+function javaLevel() {
+  let c = conf()
+  let norm = v => ({
+    '8': '1.8'
+  }[v] || v)
+  return {
+    source: norm(c['java.source_level'] || '8'),
+    target: norm(c['java.target_level'] || '8'),
+  }
 }
 
 const remote = {
@@ -230,5 +248,5 @@ const attr = {
 }
 
 module.exports = {
-  target, rules, remote, attr, query, info, fetch, dropCache, ruleRemoteFile
+  target, rules, remote, attr, query, info, fetch, dropCache, ruleRemoteFile, conf, javaLevel
 }

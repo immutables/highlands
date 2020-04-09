@@ -1,6 +1,9 @@
 'use strict'
 const mods = require('./mods')
 const ops = require('./ops')
+const buck = require('./buck')
+
+const testAttribute = `<attributes><attribute name="test" value="true"/></attributes>`
 
 function dotProject(name, options) {
   options = options || {}
@@ -42,11 +45,20 @@ function dotProject(name, options) {
 }
 
 function dotClasspath(m) {
+  let level = buck.javaLevel()
   let folders = []
 
   for (let p of Object.keys(m.srcs).sort()) {
-    folders.push(`
-  <classpathentry kind="src" path="${p}"/>`)
+    let f = m.srcs[p]
+    if (f.test) {
+      folders.push(`
+    <classpathentry kind="src" path="${p}" output=".test-classes">
+      ${testAttribute}
+    </classpathentry>`)
+    } else {
+      folders.push(`
+    <classpathentry kind="src" path="${p}"/>`)
+    }
   }
 
   let depmods = []
@@ -66,10 +78,13 @@ function dotClasspath(m) {
       let jarpath = ` path="/${mods.rootname}/${d.lib.symlinkJar(j)}"`
       let sourcepath = s ? ` sourcepath="/${mods.rootname}/${d.lib.symlinkSrc(s)}"` : ''
       let exported = d.exported ? ' exported="true"':''
+      let testAndClosing = d.test ? `>
+      ${testAttribute}
+  </classpathentry>`: '/>'
 
       deplibs.push(`
   <!-- ${d.lib.name}  ${j} -->
-  <classpathentry kind="lib"${jarpath}${sourcepath}${exported}/>`)
+  <classpathentry kind="lib"${jarpath}${sourcepath}${exported}${testAndClosing}`)
     }
   }
 
@@ -77,7 +92,7 @@ function dotClasspath(m) {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <classpath>${folders.join('')}
-  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>${deps.join('')}
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-${level.source}"/>${deps.join('')}
   <classpathentry kind="output" path=".classes"/>
 </classpath>
 `
