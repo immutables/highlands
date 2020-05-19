@@ -99,6 +99,7 @@ Then, as second argument, Maven coordinates string in the form of `<groupId>:<ar
 The third, optional, argument is used to pass options:
 
 * `options.deps` additional dependencies for the lib rules can be passed in form of an array of Buck targets. These are added as exported dependencies to the library rule
+
 * `options.processor` can specify Java annotation processor class. The processor option will turn a lib into an annotation processor "plugin". Plugins are added as `plugins` attribute array to a `java_library` rule. Additional `options.processorLibrary` used to add local rule name to define intermediate annotation processor library which can be used by external rules as a library as opposed to a plugin, the plugin will also be defined in this case but it will also add this processor library as dependency.
 
 ```js
@@ -111,6 +112,8 @@ The third, optional, argument is used to pass options:
 * `options.srcs` can be used to specify alternative artifacts used to attach as source jars. The option accepts an array of Maven coordinates or a single Maven coordinates string. The number of src elements should be exactly the same as for library jars (second argument to `.lib` call) and have corresponding order, so they can be matched by position. This, probably, is a very rare case to hit, but can be useful if you need to use specific repackaged artifact for which there are no sources, but there are sources for a regular artifact. Also, an empty array can be supplied to suppress using source jars (in this case rule to have the same number of src jars as library jars does not apply).
 
 * `options.repo` allows to specify remote repository for an artifact. Accepts uri prefix (no auto-slashes auto-added, leave trailing one) or a special values such as `'central'` for Maven Central and `jcenter` for Bintray's JCenter. When not specified, the default is to use Maven Central. The repo will be used for all artifacts in this library.
+
+* `options.internal = true` internal flag turn treats this library as internal to the repo, rather than downloaded external one. It is expected that there are rules which output jars under the library path. Example: for internal library `//some/target:goal` we will expect output files available `goal.jar` and `goal.src.jar` for rules in this folder (`/some/target`).  `options.jar` and `options.src` can be used to override these names, this is not tied to any existing rule names and their `out` filename, however those should eventually match to build output of targets in the folder. When generating IDE files, library will reference class and src jars as (generated) symlinks under `//some/target/.out` folder.
 
 ## "Lock" file and libraries
 

@@ -36,7 +36,8 @@ function load() {
 function store(libs) {
   let lockdata = {
     note: GEN_BANNER,
-    libs: libs.map(l => ({
+    libs: libs.filter(l => !l.options.internal)
+        .map(l => ({
       target: String(l.target),
       options: l.options,
       jars: l.jars.map(outputJar),

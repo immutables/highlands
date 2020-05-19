@@ -35,11 +35,11 @@ class PublishTarget {
   }
 
   get filename() {
-    throw Error("Subclass should override this property")
+    throw "Subclass should override this property"
   }
 
   get repoDir() {
-    throw Error("Subclass should override this property")
+    throw "Subclass should override this property"
   }
 
   prepare() {}

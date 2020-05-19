@@ -51,7 +51,22 @@ class Lib {
 }
 
 Lib.fromRaw = function(target, jars, options) {
+  if (!options && jars.constructor == Object) {
+    // shortened syntax when no maven jars, only options
+    options = jars
+    jars = []
+  }
   options = options || {}
+  target = buck.target(target)
+
+  if (options.internal) {
+    let asJars = [{
+      filenameJar: options.jar || (target.goal + '.jar'),
+      filenameSrc: options.src || (target.goal + '.src.jar')
+    }]
+    return new Lib(target, asJars, asJars, options)
+  }
+
   let toCoords = j => mvn.coords(j, options)
   jars = [].concat(jars).map(toCoords)
   let srcs = options.srcs && [].concat(options.srcs).map(toCoords)
@@ -62,11 +77,7 @@ Lib.fromRaw = function(target, jars, options) {
     throw `Library ${target}, 'options.srcs' are not matching number or jars`
   }
 
-  return new Lib(
-    buck.target(target),
-    jars,
-    srcs || jars,
-    options || {})
+  return new Lib(target, jars, srcs || jars, options)
 }
 
 module.exports = {
@@ -156,9 +167,17 @@ module.exports = {
 
   genBuckfiles() {
     for (let [path, ls] of Object.entries(this.byPath)) {
-      ops.write(
-          paths.join(path, 'BUCK'),
-          [GEN_BANNER, ...ls.flatMap(l => l.toBuckRules())].join(''))
+      if (ls.some(l => l.options.internal)) {
+        if (ls.some(l => !l.options.internal)) {
+          throw `Don't mix internal libraries with 3rd-party on a same path ${path}`
+        }
+        // don't write internal libraries they already exist, we only need
+        // to make sure they are properly propagated in IDE libraries
+      } else {
+        ops.write(
+            paths.join(path, 'BUCK'),
+            [GEN_BANNER, ...ls.flatMap(l => l.toBuckRules())].join(''))
+      }
     }
     // we've written some BUCK files so make sure we
     // will re-query buck

@@ -230,10 +230,18 @@ const mods = {
     function wireDependencies() {
       for (let [p, m] of Object.entries(moduleByPath)) {
         for (let [t, dep] of Object.entries(m.deps)) {
+          let resolved = false
+          // resolve dependency as sibling module in project workspace
           if (t in moduleByTarget) {
             let mod = moduleByTarget[t]
             m.depmods[mod.path] = Object.assign({}, dep, {mod})
-          } else if (t in libs.byTarget) {
+            resolved = true
+          }
+          // and / or as dependency to a jar library (external/3rdparty or prebuilt internal)
+          // if both module and library dependency are not desired at the same time
+          // it's better to manage these dependencies, potentially, by
+          // making module reexport same dependencies instead of using library directly
+          if (t in libs.byTarget) {
             let deplibs = collectTransitiveDependencies(t)
                 .filter(dk => !!libs.byTarget[dk])
                 .reduce((r, depkey) => {
@@ -242,10 +250,14 @@ const mods = {
                 }, {})
             mergeDeps(m.deplibs, deplibs)
 
-          } else if (buck.target(t).isLocal) {
-            // local dependency should be implicit in IDE
-          } else {
-            err(`${p}: Unresolvable dependency ${t}`)
+            resolved = true
+          }
+          if (!resolved) {
+            if (buck.target(t).isLocal) {
+              // local dependency should be implicit in IDE
+            } else {
+              err(`${p}: Unresolvable dependency ${t}`)
+            }
           }
         }
       }
