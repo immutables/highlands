@@ -60,9 +60,12 @@ Lib.fromRaw = function(target, jars, options) {
   target = buck.target(target)
 
   if (options.internal) {
+    let filenameJar = options.jar || (target.goal + '.jar'),
+        filenameSrc = options.src || (target.goal + '.src.jar')
     let asJars = [{
-      filenameJar: options.jar || (target.goal + '.jar'),
-      filenameSrc: options.src || (target.goal + '.src.jar')
+      filenameJar,
+      filenameSrc,
+      toString() { return `internal: ${filenameJar}, ${filenameSrc}` }
     }]
     return new Lib(target, asJars, asJars, options)
   }
