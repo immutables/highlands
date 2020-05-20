@@ -41,14 +41,21 @@ class Target {
   withGoal(goal) {
     return new Target(this.path, goal)
   }
+
+  resolve(target) {
+    return (!this.isLocal && target.isLocal)
+        ? this.withGoal(target.goal)
+        : target
+  }
 }
 
 function trimSlashes(path) {
   return path.replace(/^[/]+/, '').replace(/[/]+$/, '')
 }
 
-function target(string) {
-  let [p, g] = string.split(':')
+function target(arg) {
+  if (arg instanceof Target) return arg
+  let [p, g] = String(arg).split(':')
   p = trimSlashes(p)
   g = g || paths.basename(p)
   if (!p && !g) throw `Wrong target specifier '${string}'`

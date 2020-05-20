@@ -15,11 +15,14 @@ function load() {
     throw `File '${LOCKFILE}' is not found, please restore it or regenerate by running with --uplock --lib`
   }
   let lockdata = JSON.parse(ops.read(LOCKFILE))
-  let libs = lockdata.libs.map(l => [
-    l.target,
-    l.jars.map(toCoordsSavingChecksum(mvn.EXT.jar_sum, l.options)),
-    (l.srcs.map(toCoordsSavingChecksum(mvn.EXT.src_sum, l.options)), l.options),
-  ])
+  let libs = lockdata.libs.map(l => {
+    if ((l.options || {}).internal) {
+      return [l.target, [], l.options]
+    }
+    let jars = l.jars.map(toCoordsSavingChecksum(mvn.EXT.jar_sum, l.options))
+    l.srcs.forEach(toCoordsSavingChecksum(mvn.EXT.src_sum, l.options)) // cache only
+    return [l.target, jars, l.options]
+  })
   return libs
 
   function toCoordsSavingChecksum(ext, options) {
@@ -36,12 +39,11 @@ function load() {
 function store(libs) {
   let lockdata = {
     note: GEN_BANNER,
-    libs: libs.filter(l => !l.options.internal)
-        .map(l => ({
+    libs: libs.map(l => ({
       target: String(l.target),
       options: l.options,
-      jars: l.jars.map(outputJar),
-      srcs: l.srcs.map(outputSrc),
+      jars: l.options.internal ? [] : l.jars.map(outputJar),
+      srcs: l.options.internal ? [] : l.srcs.map(outputSrc),
     }))
   }
   return ops.write(LOCKFILE, JSON.stringify(lockdata, null, 2))

@@ -17,7 +17,7 @@ const c = {
 const use = {
   workdir: process.cwd(),
   trace: false,
-  timeout: 3, // seconds
+  timeout: 5, // seconds
 }
 
 function ls(path) {

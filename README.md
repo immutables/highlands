@@ -85,13 +85,13 @@ The entry point for script execution is "up" file. The actual name can be differ
 require('./highlands/')
   .lib('//lib/some/library', 'group:artifact:version')
   .lib('//lib/other/library:classifier', 'group:artifact:classifier:version')
-  .lib('//lib/junit', ['junit:junit:4.12', 'org.hamcrest:hamcrest-core:1.3']))
+  .lib('//lib/junit', ['junit:junit:4.12', 'org.hamcrest:hamcrest-core:1.3'])
   .run() // <- finishing move, required to launch the script execution
 ```
 ### ".lib" definition
 
 ```js
-.lib('//lib/some/library', 'group:artifact:version', options)
+  .lib('//lib/some/library', 'group:artifact:version', options)
 ```
 
 Library definition contains library's canonical Buck path. By convention, if `:target` part is omitted it is considered the same as last segment of a path, so `//lib/one` is equivalent to `//lib/one:one` and is so called default target. Non-default targets are also supported and can be used for classifier jars or logically "sibling" jars/flavors. The example uses `//lib/` shared suffix for such libraries and it is not mandatory — use the path you want, but it's usually a good idea to have such common prefix (`//lib`, `//extern`, `//third-party/` etc are commonly used).

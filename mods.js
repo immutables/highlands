@@ -73,7 +73,7 @@ const mods = {
         let isTest = isTestRule(rule)
 
         addSourceFolders(m.srcs, rule, isTest)
-        mergeDeps(m.deps, depsOf(rule, isTest))
+        mergeDeps(m.deps, depsOf(t, rule, isTest))
 
         moduleByTarget[String(t)] = m
       }
@@ -134,7 +134,7 @@ const mods = {
       }
     }
 
-    function depsOf(rule, isTestRule) {
+    function depsOf(target, rule, isTestRule) {
       let plainDeps = rule[buck.attr.deps] || []
       let providedDeps = rule[buck.attr.providedDeps] || []
       let exportedDeps = rule[buck.attr.exportedDeps] || []
@@ -144,10 +144,11 @@ const mods = {
         ...plainDeps,
         ...providedDeps,
         ...exportedDeps,
-        ...exportedProvidedDeps].reduce((ds, d) => (ds[d] = {}, ds), {})
+        ...exportedProvidedDeps]
+        .map(d => target.resolve(buck.target(d)))
+        .reduce((ds, d) => (ds[d] = {target:d}, ds), {})
 
       for (let [k, dep] of Object.entries(deps)) {
-        dep.target = buck.target(k)
         dep.test = isTestRule
         dep.provided = providedDeps.includes(k) || exportedProvidedDeps.includes(k)
         dep.exported = exportedDeps.includes(k) || exportedProvidedDeps.includes(k)
@@ -212,19 +213,28 @@ const mods = {
       }
     }
 
-    function collectTransitiveDependencies(target) {
-      let result = new Set()
-      let toProcess = [target]
-      while (toProcess.length > 0) {
-        let d = toProcess.shift()
-        if (result.has(d)) continue
-        result.add(d)
-        let deplib = libs.byTarget[d]
-        if (deplib) {
-          toProcess.push(...((deplib.options.deps || []).map(buck.target).map(String)))
+    function collectLibraryTransitiveDependencies(target) {
+      if (!(target in libs.byTarget)) throw `Not in libs.byTarget: ${target}`
+
+      let results = new Set()
+      let unprocessed = [target]
+
+      do {
+        let l = unprocessed.shift()
+        results.add(l)
+        let deplib = libs.byTarget[l]
+        for (let d of (deplib.options.deps || [])) {
+          let t = deplib.target.resolve(d).toString()
+          if ((t in libs.byTarget) && !results.has(l)) {
+            unprocessed.push(t)
+          }
+          // it occurs to me that under current model, we cannot
+          // properly propagate library's dependency on a [ide] module,
+          // only to other external or internal libraries, should be fine though
         }
-      }
-      return [...result]
+      } while (unprocessed.length > 0)
+
+      return [...results]
     }
 
     function wireDependencies() {
@@ -234,30 +244,37 @@ const mods = {
           // resolve dependency as sibling module in project workspace
           if (t in moduleByTarget) {
             let mod = moduleByTarget[t]
-            m.depmods[mod.path] = Object.assign({}, dep, {mod})
+            if (mod !== m) {
+              // in case of local dependency, we cannot add dependency on self module
+              // only dependency on local internal libs (to be jar compiled) are supported
+              // but we mark dependency resolved anyway
+              m.depmods[mod.path] = Object.assign({}, dep, {mod})
+            }
             resolved = true
           }
           // and / or as dependency to a jar library (external/3rdparty or prebuilt internal)
           // if both module and library dependency are not desired at the same time
           // it's better to manage these dependencies, potentially, by
           // making module reexport same dependencies instead of using library directly
+
           if (t in libs.byTarget) {
-            let deplibs = collectTransitiveDependencies(t)
-                .filter(dk => !!libs.byTarget[dk])
+            let deplibs = collectLibraryTransitiveDependencies(t)
                 .reduce((r, depkey) => {
                   r[depkey] = Object.assign({}, dep, {lib: libs.byTarget[depkey]})
                   return r
                 }, {})
+
             mergeDeps(m.deplibs, deplibs)
 
             resolved = true
           }
+
           if (!resolved) {
-            if (buck.target(t).isLocal) {
-              // local dependency should be implicit in IDE
-            } else {
-              err(`${p}: Unresolvable dependency ${t}`)
-            }
+            let t = buck.target(t)
+            if (t.isLocal || t.path == m.path) {
+              // local dependency should be implicit in IDE module
+              // or it should have been an internal library
+            } else err(`${p}: Unresolvable dependency ${t}`)
           }
         }
       }
