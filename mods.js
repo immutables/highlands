@@ -124,7 +124,7 @@ const mods = {
         // https://github.com/facebook/buck/issues/2235
         genPath = `buck-out/annotation/${rule[buck.attr.path]}/__${rule[buck.attr.name]}#testsjar_gen__`
       }
-      if (genPath && usesCodegen(rule)) {
+      if (genPath && usesCodegen(rule) && !hasLabel(rule, 'ide_no_gen_srcs')) {
         let alias = resFolder || (isTestGen ? 'test' : 'src')
         putInc(srcs, `${alias}-gen`, {
           gen: true,
@@ -256,7 +256,6 @@ const mods = {
           // if both module and library dependency are not desired at the same time
           // it's better to manage these dependencies, potentially, by
           // making module reexport same dependencies instead of using library directly
-
           if (t in libs.byTarget) {
             let deplibs = collectLibraryTransitiveDependencies(t)
                 .reduce((r, depkey) => {

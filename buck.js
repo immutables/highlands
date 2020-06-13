@@ -117,8 +117,10 @@ java_library(
 }
 
 function toBuckDeps(jars, options) {
-  return jars.map(j => `':${flatname(j)}'`)
-      .concat((options.deps || []).map(target).map(d => `'${d}'`))
+  return jars.map(j => `:${flatname(j)}`)
+      .concat(options.deps || [])
+      .map(target)
+      .map(d => `'${d}'`)
       .join(', ')
 }
 

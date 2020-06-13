@@ -61,7 +61,9 @@ Lib.fromRaw = function(target, jars, options) {
 
   if (options.internal) {
     let filenameJar = options.jar || (target.goal + '.jar'),
-        filenameSrc = options.src || (target.goal + '.src.jar')
+        filenameSrc = options.src || (target.goal + '.src.zip')
+         // '.src.zip' learned that src works best with zip extension, not jar
+         // so that they can be included into 'srcs' of java_library
     let asJars = [{
       filenameJar,
       filenameSrc,

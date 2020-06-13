@@ -12,6 +12,22 @@ function libraryXml(lib) {
   let sourcesRoots = lib.srcs.map(j => `
       <root url="jar://$PROJECT_DIR$/${lib.symlinkSrc(j)}!/" />`)
 
+  if (lib.options.includeGeneratedSrcs) {
+    // This is very ad-hoc, convenience stuff so we can intellij idea
+    // to show not only original sources, but also derived sources,
+    // which otherwise are not available, only decompilable classes in IDE
+    let genSrcsRules = [].concat(lib.options.includeGeneratedSrcs)
+        .map(buck.target)
+        .map(t => lib.target.resolve(t))
+        .flatMap(buck.info)
+        .map(info => info[buck.attr.generatedSourcePath])
+        .filter(Boolean)
+        .map(path => `
+      <root url="file://$PROJECT_DIR$/${path}/" />`)
+
+    sourcesRoots.push(...genSrcsRules)
+  }
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <component name="libraryTable">
   <library name="${lib.name}">
