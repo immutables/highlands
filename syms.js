@@ -14,8 +14,7 @@ module.exports = {
   },
 
   linkOutput(targets) {
-    targets = targets || '//...'
-    let rules = buck.info(targets)
+    let rules = buck.info(targets || `//...`)
 
     for (let r of rules) {
       if ((r[buck.attr.labels] || []).includes(forceOutputLabel)

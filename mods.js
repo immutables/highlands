@@ -26,9 +26,14 @@ class Mod {
 const mods = {
   all: [],
   rootname: UNASSIGNED,
+  addedTargets: [],
 
   add(mod) {
     this.all.push(mod)
+  },
+
+  addTargets(pattern) {
+    this.addedTargets.push(pattern)
   },
 
   toString() {
@@ -40,6 +45,9 @@ const mods = {
     // to force rediscovery clear this.all array
 
     let allTargets = buck.info('//...')
+    for (let a of this.addedTargets) {
+      allTargets.push(...buck.info(a))
+    }
     let moduleByPath = {} // mapping from path/folder to a originating rule
     let moduleByTarget = {} // reverse mapping of which module target falls in
 
@@ -224,8 +232,8 @@ const mods = {
         results.add(l)
         let deplib = libs.byTarget[l]
         for (let d of (deplib.options.deps || [])) {
-          let t = deplib.target.resolve(d).toString()
-          if ((t in libs.byTarget) && !results.has(l)) {
+          let t = deplib.target.resolve(buck.target(d)).toString()
+          if ((t in libs.byTarget) && !results.has(t)) {
             unprocessed.push(t)
           }
           // it occurs to me that under current model, we cannot
@@ -269,8 +277,8 @@ const mods = {
           }
 
           if (!resolved) {
-            let t = buck.target(t)
-            if (t.isLocal || t.path == m.path) {
+            let bt = buck.target(t)
+            if (bt.isLocal || bt.path == m.path) {
               // local dependency should be implicit in IDE module
               // or it should have been an internal library
             } else err(`${p}: Unresolvable dependency ${t}`)

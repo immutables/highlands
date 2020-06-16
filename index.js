@@ -85,6 +85,10 @@ module.exports = {
     pub.fatJar(target, options)
     return this
   },
+  addTargets(pattern) {
+    mods.addTargets(pattern)
+    return this
+  },
   include(script) {
     libs.include(script)
     return this
