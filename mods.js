@@ -2,7 +2,7 @@
 const paths = require('path')
 const buck = require('./buck')
 const libs = require('./libs')
-const {err} = require('./ops')
+const ops = require('./ops')
 
 const UNASSIGNED = '__UNASSIGNED__'
 
@@ -80,26 +80,26 @@ const mods = {
 
         let isTest = isTestRule(rule)
 
-        addSourceFolders(m.srcs, rule, isTest)
+        addSourceFolders(m, rule, isTest)
         mergeDeps(m.deps, depsOf(t, rule, isTest))
 
         moduleByTarget[String(t)] = m
       }
     }
 
-    function addSourceFolders(srcs, rule, isTest) {
-      let resFolder = rule[buck.attr.resourcesRoot]
+    function addSourceFolders(module, rule, isTest) {
+      let srcs = module.srcs
+      let folder = rule[buck.attr.resourcesRoot]
+      if (!folder || !ops.exists(`${module.path}/${folder}`)) return
 
-      if (resFolder) {
-        let existing = srcs[resFolder]
-        srcs[resFolder] = {
-          test: isTest || (existing ? existing.test : false),
-          path: resFolder,
-          res: hasLabel(rule, 'ide_res') ? {test:false}
-            : hasLabel(rule, 'ide_test_res') ? {test:true}
-            : false,
-          gen: false,
-        }
+      let existing = srcs[folder]
+      srcs[folder] = {
+        test: isTest || (existing ? existing.test : false),
+        path: folder,
+        res: hasLabel(rule, 'ide_res') ? {test:false}
+          : hasLabel(rule, 'ide_test_res') ? {test:true}
+          : false,
+        gen: false,
       }
     }
 
@@ -281,7 +281,7 @@ const mods = {
             if (bt.isLocal || bt.path == m.path) {
               // local dependency should be implicit in IDE module
               // or it should have been an internal library
-            } else err(`${p}: Unresolvable dependency ${t}`)
+            } else ops.err(`${p}: Unresolvable dependency ${t}`)
           }
         }
       }

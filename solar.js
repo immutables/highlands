@@ -52,7 +52,7 @@ function dotClasspath(m) {
     let f = m.srcs[p]
     if (f.test) {
       folders.push(`
-    <classpathentry kind="src" path="${p}" output=".test-classes">
+    <classpathentry kind="src" path="${p}" output=".ecj/test-classes">
       ${testAttribute}
     </classpathentry>`)
     } else {
@@ -93,13 +93,13 @@ function dotClasspath(m) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <classpath>${folders.join('')}
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-${level.source}"/>${deps.join('')}
-  <classpathentry kind="output" path=".classes"/>
+  <classpathentry kind="output" path=".ecj/classes"/>
 </classpath>
 `
 }
 
 function projectName(m) {
-  return `${mods.rootname}.${m.name}`
+  return m.path.replace(/\//g, '.')
 }
 
 module.exports = {
