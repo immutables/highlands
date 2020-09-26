@@ -36,6 +36,12 @@ const opts = args({
     buck.fetch()
     syms.linkOutput()
   }, 10],
+  '--symout': ['Generate output symlinks', () => {
+    libs.prepare()
+    console.error(String(libs))
+    buck.fetch()
+    syms.linkOutput()
+  }, 11],
   '--intellij': ['Generates project for Intellij IDEA', () => {
     libs.prepare()
     mods.discover()

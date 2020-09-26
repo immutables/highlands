@@ -60,7 +60,7 @@ function moduleMainXml(excludes) {
 }
 
 function moduleXml(mod) {
-  let excludesFolders = ['.out', '.ecj'] // bin output + eclipse classes output
+  let excludesFolders = ['.out', '.ecj', '.cache'] // bin output + eclipse classes output + parcel etc
       .filter(dir => ops.exists(paths.join(mod.path, dir)))
       .map(dir => `
       <excludeFolder url="file://$MODULE_DIR$/../../${mod.path}/${dir}" isTestSource="false" />`)
