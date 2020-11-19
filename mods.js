@@ -78,6 +78,10 @@ const mods = {
         let m = moduleByPath[t.path]
         if (!m) continue
 
+        // dependencies of annotation processor definition are
+        // not a regular compile dependencies
+        if (rule[buck.attr.type] === 'java_annotation_processor') continue
+
         let isTest = isTestRule(rule)
 
         addSourceFolders(m, rule, isTest)

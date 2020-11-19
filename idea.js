@@ -13,7 +13,7 @@ function libraryXml(lib) {
       <root url="jar://$PROJECT_DIR$/${lib.symlinkSrc(j)}!/" />`)
 
   if (lib.options.includeGeneratedSrcs) {
-    // This is very ad-hoc, convenience stuff so we can intellij idea
+    // This is very ad-hoc, convenience stuff so we can tell intellij idea
     // to show not only original sources, but also derived sources,
     // which otherwise are not available, only decompilable classes in IDE
     let genSrcsRules = [].concat(lib.options.includeGeneratedSrcs)
@@ -60,7 +60,7 @@ function moduleMainXml(excludes) {
 }
 
 function moduleXml(mod) {
-  let excludesFolders = ['.out', '.ecj', '.cache'] // bin output + eclipse classes output + parcel etc
+  let excludesFolders = ['.out', '.ecj', '.cache', 'target'] // bin output + eclipse classes output + maybe maven + parcel etc
       .filter(dir => ops.exists(paths.join(mod.path, dir)))
       .map(dir => `
       <excludeFolder url="file://$MODULE_DIR$/../../${mod.path}/${dir}" isTestSource="false" />`)

@@ -10,6 +10,7 @@ const args = require('./args')
 const ops = require('./ops')
 const pub = require('./pub')
 const grab = require('./grab')
+const center = require('./center')
 
 const opts = args({
   '--help': ['Prints usage and option hints', function() {
@@ -66,6 +67,14 @@ const opts = args({
   '--mvn': ['Prints JSON info about Maven coordinates', (coords) => {
     let info = mvn.coords(coords).info
     console.log(JSON.stringify(info, null, 2))
+  }],
+  '--center': ['Generateds maven POMs/modules to deploy to Central and other stuff', (parentPom) => {
+    libs.prepare()
+    mods.discover()
+    center.prepare()
+    console.error(String(center))
+    syms.linkGenSrc()
+    center.genProjects(parentPom)
   }],
 }, {
   before: (_, hint) => ops.info(`${hint}`),
