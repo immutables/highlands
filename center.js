@@ -63,9 +63,9 @@ function generateParentTemplate(parentPom) {
   let template = parentPom.replace('.xml', '.template.xml')
   if (ops.exists(template)) {
     let content = ops.read(template)
-      .replace('G<!--GROUP-->', parentGroup())
-      .replace('A<!--ARTIFACT-->', parentArtifact(parentPom))
-      .replace('V<!--VERSION-->', parentVersion())
+      .replace(/G<!--GROUP-->/g, parentGroup())
+      .replace(/A<!--ARTIFACT-->/g, parentArtifact(parentPom))
+      .replace(/V<!--VERSION-->/g, parentVersion())
       .replace('<!--MODULES-->', artifactModules.map(m => `
     <module>${m.path}</module>`).join(''))
 
@@ -76,11 +76,28 @@ function generateParentTemplate(parentPom) {
 function generatePom(module, rule, parentPom) {
   let coords = mvn.coords(jarOf(rule))
   // for each
-  let relativePath = '../' + parentPom
+  let parentPath = '../' + parentPom
   for (let ch of module.path) {
-    if (ch === '/') relativePath = '../' + relativePath
+    if (ch === '/') parentPath = '../' + parentPath
   }
-  let content = `<?xml version="1.0" encoding="UTF-8"?>
+
+  let pom = paths.join(module.path, 'pom.xml')
+  let template = paths.join(module.path, 'pom.template.xml')
+  let content
+
+  if (ops.exists(template)) {
+    content = ops.read(template)
+      .replace(/G<!--GROUP-->/g, coords.group)
+      .replace(/A<!--ARTIFACT-->/g, coords.artifact)
+      .replace(/V<!--VERSION-->/g, coords.version)
+      .replace(/G<!--PARENT-GROUP-->/g, parentGroup())
+      .replace(/A<!--PARENT-ARTIFACT-->/g, parentArtifact(parentPom))
+      .replace(/V<!--PARENT-VERSION-->/g, parentVersion())
+      .replace(/P<!--PARENT-PATH-->/g, parentPath)
+      .replace('<!--DEPENDENCIES-->', pomDependencies(module))
+
+  } else {
+    content = `<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>${coords.group}</groupId>
@@ -92,13 +109,14 @@ function generatePom(module, rule, parentPom) {
     <groupId>${parentGroup()}</groupId>
     <artifactId>${parentArtifact(parentPom)}</artifactId>
     <version>${parentVersion()}</version>
-    <relativePath>${relativePath}</relativePath>
+    <relativePath>${parentPath}</relativePath>
   </parent>
   <dependencies>${pomDependencies(module)}
   </dependencies>
 </project>
 `
-  ops.write(paths.join(module.path, 'pom.xml'), content)
+  }
+  ops.write(pom, content)
 }
 
 function pomDependencies(module) {
