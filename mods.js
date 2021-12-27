@@ -23,6 +23,12 @@ class Mod {
   }
 }
 
+
+function pathDerivedName(m) {
+  return m.path.replace(/[_/]/g, '.')
+}
+
+
 const mods = {
   all: [],
   rootname: UNASSIGNED,
@@ -83,6 +89,9 @@ const mods = {
         if (rule[buck.attr.type] === 'java_annotation_processor') continue
 
         let isTest = isTestRule(rule)
+        if (isPackageModule(rule)) {
+          m.package = pathDerivedName(m)
+        }
 
         addSourceFolders(m, rule, isTest)
         mergeDeps(m.deps, depsOf(t, rule, isTest))
@@ -94,6 +103,9 @@ const mods = {
     function addSourceFolders(module, rule, isTest) {
       let srcs = module.srcs
       let folder = rule[buck.attr.resourcesRoot]
+      if (module.package) {
+        folder = isTest ? 'test' : '.'
+      }
       if (!folder || !ops.exists(`${module.path}/${folder}`)) return
 
       let existing = srcs[folder]
@@ -104,6 +116,7 @@ const mods = {
           : hasLabel(rule, 'ide_test_res') ? {test:true}
           : false,
         gen: false,
+        package: module.package && (module.package + (isTest ? '.test': '')),
       }
     }
 
@@ -216,10 +229,6 @@ const mods = {
         }
       }
 
-      function pathDerivedName(m) {
-        return m.path.replace(/[_/]/g, '-')
-      }
-
       function assignUniqueName(m, name) {
         m.name = putInc(uniqueNames, name, m)
       }
@@ -296,6 +305,16 @@ const mods = {
     // any other ways to distinguish test rules?
     function isTestRule(rule) {
       return /.+_test$/.test(rule[buck.attr.type] || '')
+    }
+
+    // special streamlined package module type, where the convention is
+    // - the path to the module withing project root equals package path
+    // - the sources are directly in the module folder ('.' related to the module path)
+    // - the test sources are in 'test' subfolder and thus considered in '.test' subpackage
+    // - within the module, sources do not have additional package path, they use the package
+    //   path folder nesting from withing root.
+    function isPackageModule(rule) {
+      return hasLabel(rule, 'ide_mod_package')
     }
 
     function hasLabel(rule, label) {

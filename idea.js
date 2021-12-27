@@ -99,6 +99,7 @@ function moduleXml(mod) {
   function folderAttributes(f) {
     if (f.res) return f.res.test ? `type="java-test-resource"` : `type="java-resource"`
     return `isTestSource="${f.test}" generated="${f.gen}"`
+        + (f.package ? ` packagePrefix="${f.package}"` : '')
   }
 }
 
