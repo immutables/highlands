@@ -5,6 +5,8 @@ const libs = require('./libs')
 const mods = require('./mods')
 const buck = require('./buck')
 
+const excludes = []
+
 function libraryXml(lib) {
   let classesRoots = lib.jars.map(j => `
       <root url="jar://$PROJECT_DIR$/${lib.symlinkJar(j)}!/" />`)
@@ -60,11 +62,14 @@ function moduleMainXml(excludes) {
 }
 
 function moduleXml(mod) {
-   // bin output + eclipse classes output + maybe maven + docker + parcel etc
-  let excludesFolders = ['.out', '.ecj', '.docker', '.cache', 'target',]
+  let dotFolders = ops.ls(mod.path)
+      .filter(l => l.isDirectory() && l.name.startsWith('.'))
+      .map(l => l.name)
+
+  let excludesFolders = excludes.concat(dotFolders)
       .filter(dir => ops.exists(paths.join(mod.path, dir)))
       .map(dir => `
-      <excludeFolder url="file://$MODULE_DIR$/../../${mod.path}/${dir}" isTestSource="false" />`)
+      <excludeFolder url="file://$MODULE_DIR$/../../${mod.path}/${dir}" />`)
 
   let folders = Object.entries(mod.srcs).map(([p, f]) => `
       <sourceFolder url="file://$MODULE_DIR$/../../${mod.path}/${p}" ${folderAttributes(f)}/>`)
@@ -144,6 +149,7 @@ function kotlincXml() {
 }
 
 module.exports = {
+  excludes,
   genProject() {
     this.genLibs()
     this.genModules()

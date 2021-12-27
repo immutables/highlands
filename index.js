@@ -100,6 +100,10 @@ module.exports = {
     pub.fatJar(target, options)
     return this
   },
+  excludeDirs(...dirs) {
+    idea.excludes.push(...dirs)
+    return this
+  },
   addTargets(pattern) {
     mods.addTargets(pattern)
     return this
