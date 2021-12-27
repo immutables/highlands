@@ -10,7 +10,7 @@ My heart's in the Highlands, wherever I go.<br>
 
 _Highlands_ is a set of scripts used to manage Facebook Buck project workspace in a certain manner.
 
-* Generates library definition from Maven Central artifacts and maintaining supplementary lock file. The generated lock file (JSON) and library definitions (comprised of `BUCK` files with `prebuilt_jar` and `remote_file` rules) then stored in Git, so that reliable and reproducible builds are possible. Such libraries are defined using simple DSL-ish calls in "up" file and can easily be updated and regenerated.
+* Generates library definition from Maven Central artifacts and maintains supplementary lock file. The generated lock file (JSON) and library definitions (comprised of `BUCK` files with `prebuilt_jar` and `remote_file` rules) then stored in Git, so that reliable and reproducible builds are possible. Such libraries are defined using simple DSL-ish calls in "up" file and can easily be updated and regenerated.
 
 * Generates decent Java projects and modules for Intellij IDEA and Eclipse IDEs. Annotation processing is supported by linking generated source folders.
 
@@ -76,7 +76,7 @@ $ node up --mvn org.immutables:value:2.7.3
 
 ## "Up" file
 
-The entry point for script execution is "up" file. The actual name can be different, but for simplity let's assume it's will be just `up.js`. It contain require instruction to import _Highlands_ script, DSL-ish function calls to define libraries and finalizing `run()` to perform actions. Actions are specified by command line options (see usage).
+The entry point for script execution is "up" file. The actual name can be different, but for simplicity let's assume it's will be just `up.js`. It contain require instruction to import _Highlands_ script, DSL-ish function calls to define libraries and finalizing `run()` to perform actions. Actions are specified by command line options (see usage).
 
 ```js
 // up.js file, put it to the root folder
