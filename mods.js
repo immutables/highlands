@@ -103,10 +103,7 @@ const mods = {
     function addSourceFolders(module, rule, isTest) {
       let srcs = module.srcs
       let folder = rule[buck.attr.resourcesRoot]
-      if (module.package) {
-        folder = isTest ? 'test' : '.'
-      }
-      if (!folder || !ops.exists(`${module.path}/${folder}`)) return
+      if (!folder || (folder != '.' && !ops.exists(`${module.path}/${folder}`))) return
 
       let existing = srcs[folder]
       srcs[folder] = {
@@ -116,7 +113,7 @@ const mods = {
           : hasLabel(rule, 'ide_test_res') ? {test:true}
           : false,
         gen: false,
-        package: module.package && (module.package + (isTest ? '.test': '')),
+        package: module.package,
       }
     }
 
@@ -309,10 +306,10 @@ const mods = {
 
     // special streamlined package module type, where the convention is
     // - the path to the module withing project root equals package path
-    // - the sources are directly in the module folder ('.' related to the module path)
-    // - the test sources are in 'test' subfolder and thus considered in '.test' subpackage
+    // - the sources are directly in the module folder ('.' related to the module path) or 'src'
+    // - the test sources are in 'test' subfolder
     // - within the module, sources do not have additional package path, they use the package
-    //   path folder nesting from withing root.
+    //   path folder nesting from withing root for subpackages though.
     function isPackageModule(rule) {
       return hasLabel(rule, 'ide_mod_package')
     }
